@@ -1,6 +1,7 @@
 package paperstx.model
 
-import scalacss.internal.ValueT.Color
+import paperstx.util.HueColor
+
 import scalaz.{Equal, Functor}
 import scalaz.Scalaz._
 
@@ -20,7 +21,7 @@ case class EnumTemplateType[TColor](label: String, color: TColor) {
 }
 
 object EnumTemplateType {
-  type Full = EnumTemplateType[Color]
+  type Full = EnumTemplateType[HueColor]
 
   implicit def equal[TColor]: Equal[EnumTemplateType[TColor]] =
     Equal.equal(_ == _)

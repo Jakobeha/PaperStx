@@ -1,6 +1,6 @@
 package paperstx.model
 
-import org.scalajs.dom.ext.Color
+import paperstx.util.HueColor
 
 import scalaz.Applicative
 import scalaz.Scalaz._
@@ -39,7 +39,7 @@ case class UnionTemplateClass[TPhase <: Phase](
 
 object TemplateClass {
   implicit class FullTypeTemplateClass(self: TemplateClass[Phase.Validated]) {
-    val typ: TemplateType[Option[Color]] = self match {
+    val typ: TemplateType[Option[HueColor]] = self match {
       case EnumTemplateClass(enumType, _) => TemplateType.lift(enumType)
       case UnionTemplateClass(label, subTypes) =>
         TemplateType.union(label, subTypes)

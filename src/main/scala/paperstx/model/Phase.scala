@@ -1,5 +1,7 @@
 package paperstx.model
 
+import paperstx.util.HueColor
+
 trait Phase {
   type TypedTemplate
   type TemplateType
@@ -8,11 +10,9 @@ trait Phase {
 
 object Phase {
   trait Full extends Phase {
-    import org.scalajs.dom.ext
-
     override type TypedTemplate = TypedTemplate.Full
     override type TemplateType = TemplateType.Full
-    override type Color = ext.Color
+    override type Color = HueColor
   }
 
   trait FullType[TOrig <: Phase] extends Phase {
@@ -25,11 +25,10 @@ object Phase {
 
   trait Validated extends Phase {
     import paperstx.model
-    import org.scalajs.dom.ext
 
     override type TypedTemplate = Nothing
-    override type TemplateType = model.TemplateType[Option[ext.Color]]
-    override type Color = Option[ext.Color]
+    override type TemplateType = model.TemplateType[Option[HueColor]]
+    override type Color = Option[HueColor]
   }
 
   trait Parsed extends Phase {

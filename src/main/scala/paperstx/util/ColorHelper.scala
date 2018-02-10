@@ -3,16 +3,6 @@ package paperstx.util
 import org.scalajs.dom.ext.Color
 
 object ColorHelper {
-
-  /**
-    * Up to a certain integer, each color corresponding to a different integer
-    * should be relatively distinguisable from the others,
-    * and also be relatively easy on the eyes.
-    */
-  def maxDistinct(seed: Int): Color = {
-    fromHSL(seed * 0.12345f, 0.25f, 0.5f)
-  }
-
   def fromHSL(h: Float, s: Float, l: Float): Color = {
     //From https://gist.github.com/mjackson/5311256
     val (rf: Float, gf: Float, bf: Float) = {

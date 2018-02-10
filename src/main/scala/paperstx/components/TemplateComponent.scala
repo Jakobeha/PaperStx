@@ -14,7 +14,9 @@ object TemplateComponent {
         val template = typedTemplate.template
 
         <.div(paperstx.Styles.template,
-              ^.backgroundColor := typ.color.toString,
+              ^.backgroundColor := typ.color
+                .specify(saturation = 0.75f, brightness = 0.5f)
+                .toString,
               template.frags.toTagMod(FragComponent.apply))
       }
       .build

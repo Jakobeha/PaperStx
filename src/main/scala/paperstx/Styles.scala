@@ -40,7 +40,7 @@ object Styles extends StyleSheet.Inline {
     width(100 %%),
     height(100 %%),
     display.flex,
-    opacity(0.25)
+    opacity(0.5)
   )
 
   val subTint = style(
@@ -152,9 +152,7 @@ object Styles extends StyleSheet.Inline {
     padding(1 px)
   )
 
-  def freeBlob(colors: Set[Color]) = freeBlobConst
-
-  val freeBlobConst = style(
+  val freeBlob = style(
     genStxBlock,
     color.rgb(240, 240, 240),
     borderColor.rgb(128, 128, 128),

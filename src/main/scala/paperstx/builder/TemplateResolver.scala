@@ -1,8 +1,7 @@
 package paperstx.builder
 
-import org.scalajs.dom.ext.Color
 import paperstx.model._
-import paperstx.util.ColorHelper
+import paperstx.util.{ColorHelper, HueColor}
 
 import scalaz.Scalaz._
 import scalaz._
@@ -47,12 +46,16 @@ object TemplateResolver {
       enumType
         .orElse(getUnionType)
         .getOrElse(notFoundFailure)
-        .asInstanceOf[BuildValidation[TemplateType[Option[Color]]]]
+        .asInstanceOf[BuildValidation[TemplateType[Option[HueColor]]]]
     }
 
-    override def traverseColor(color: Option[String]) = color match {
-      case Some(colorr) => Success(Some(Color(colorr)))
-      case None         => Success(None)
+    override def traverseColor(colorStr: Option[String]) = colorStr match {
+      case Some(colorStrr) =>
+        HueColor.parse(colorStrr) match {
+          case Some(color) => Success(Some(color))
+          case None        => Validation.failureNel(s"Not a valid color: $colorStrr")
+        }
+      case None => Success(None)
     }
   }
 
@@ -64,18 +67,19 @@ object TemplateResolver {
       extends PhaseTransformer[Phase.Validated, Phase.Full, Differ] {
     override def traverseTemplate(typedTemplate: Nothing) = typedTemplate
 
-    override def traverseTemplateType(templateType: TemplateType[Option[Color]])
-      : Differ[TemplateType[Color]] =
+    override def traverseTemplateType(
+        templateType: TemplateType[Option[HueColor]])
+      : Differ[TemplateType[HueColor]] =
       templateType.traverseColor(this.traverseColor)
 
-    override def traverseColor(color: Option[Color]): Differ[Color] =
+    override def traverseColor(color: Option[HueColor]): Differ[HueColor] =
       color match {
         case Some(colorr) => colorr.point[Differ]
         case None =>
           for {
             newColorSeed <- get[Int]
             _ <- modify[Int](_ + 1)
-          } yield ColorHelper.maxDistinct(newColorSeed)
+          } yield HueColor.maxDistinct(newColorSeed)
       }
   }
 

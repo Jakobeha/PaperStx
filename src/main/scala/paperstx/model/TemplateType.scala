@@ -1,6 +1,6 @@
 package paperstx.model
 
-import org.scalajs.dom.ext.Color
+import paperstx.util.HueColor
 
 import scalaz.Scalaz._
 import scalaz._
@@ -31,7 +31,7 @@ case class TemplateType[TColor](label: String,
 }
 
 object TemplateType {
-  type Full = TemplateType[Color]
+  type Full = TemplateType[HueColor]
 
   /**
     * Labelled undefined and separate from other types, contains no instances.

@@ -18,9 +18,11 @@ object BlobComponent {
           case FreeBlob(content) =>
             <.div(
               paperstx.Styles.inlineWrapper,
-              <.input.text(paperstx.Styles.freeBlob(outerType.colors),
+              <.input.text(paperstx.Styles.freeBlob,
                            VdomStyle("width") := (content.length * 16) + " px",
-                           ^.value := content))
+                           ^.value := content,
+                           MultiTintComponent(outerType.colors.toSeq))
+            )
           case TemplateBlob(typedTemplate) =>
             <.div(paperstx.Styles.templateBlob,
                   TemplateComponent(typedTemplate))
