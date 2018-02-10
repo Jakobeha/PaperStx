@@ -4,11 +4,9 @@ import paperstx.util.Fix
 
 import scalacss.internal.ValueT.Color
 
-case class Template[TType, TTemp, TColor](
-    isBinding: Boolean,
-    frags: Seq[TemplateFrag[TType, TTemp, TColor]]) {}
+case class Template[TPhase <: Phase](isBinding: Boolean,
+                                     frags: Seq[TemplateFrag[TPhase]]) {}
 
 object Template {
-  type AlmostFull[TTemp] = Template[TemplateType.Full, TTemp, Color]
-  type Full = Fix[AlmostFull]
+  type Full = Template[Phase.Full]
 }

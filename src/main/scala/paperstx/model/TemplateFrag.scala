@@ -1,48 +1,45 @@
 package paperstx.model
 
 import scala.scalajs.js.RegExp
-import scalacss.internal.ValueT.Color
 
-sealed trait TemplateFrag[TType, TTemp, TColor] {}
+sealed trait TemplateFrag[TPhase] {}
 
-case class StaticFrag[TType, TTemp, TColor](text: String)
-    extends TemplateFrag[TType, TTemp, TColor]
+case class StaticFrag[TPhase <: Phase](text: String)
+    extends TemplateFrag[TPhase]
 
-case class FreeTextFrag[TType, TTemp, TColor](constrainer: RegExp, text: String)
-    extends TemplateFrag[TType, TTemp, TColor]
+case class FreeTextFrag[TPhase <: Phase](constrainer: RegExp, text: String)
+    extends TemplateFrag[TPhase]
 
-case class Hole[TType, TTemp, TColor](typ: TType,
-                                      isBinding: Boolean,
-                                      content: Option[Blob[TTemp]])
-    extends TemplateFrag[TType, TTemp, TColor]
+case class Hole[TPhase <: Phase](typ: TPhase#TemplateType,
+                                 isBinding: Boolean,
+                                 content: Option[Blob[TPhase#Template]])
+    extends TemplateFrag[TPhase]
 
 object TemplateFrag {
-  type Full = TemplateFrag[TemplateType.Full, Template.Full, Color]
+  type Full = TemplateFrag[Phase.Full]
 }
 
 object StaticFrag {
-  type Full = StaticFrag[TemplateType.Full, Template.Full, Color]
+  type Full = StaticFrag[Phase.Full]
 }
 
 object FreeTextFrag {
-  type Full = FreeTextFrag[TemplateType.Full, Template.Full, Color]
+  type Full = FreeTextFrag[Phase.Full]
 
   /**
     * A free text fragment with no text.
     */
-  def empty[TType, TTemp, TColor](
-      constrainer: RegExp): FreeTextFrag[TType, TTemp, TColor] =
+  def empty[TPhase <: Phase](constrainer: RegExp): FreeTextFrag[TPhase] =
     FreeTextFrag(constrainer, text = "")
 }
 
 object Hole {
-  type Full = Hole[TemplateType.Full, Template.Full, Color]
+  type Full = Hole[Phase.Full]
 
   /**
     * A hole with no elements.
     */
-  def empty[TType, TTemp, TColor](
-      typ: TType,
-      isBinding: Boolean): Hole[TType, TTemp, TColor] =
+  def empty[TPhase <: Phase](typ: TPhase#TemplateType,
+                             isBinding: Boolean): Hole[TPhase] =
     Hole(typ, isBinding, content = None)
 }

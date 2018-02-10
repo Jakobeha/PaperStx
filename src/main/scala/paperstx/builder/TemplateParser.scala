@@ -1,15 +1,26 @@
-package paperstx.parser
+package paperstx.builder
 
 import fastparse.all._
 import paperstx.model._
 import paperstx.util.RegExpHelper
 
 import scala.scalajs.js.{JavaScriptException, RegExp, SyntaxError}
+import scalaz.{Failure, Success, Validation}
 
 object TemplateParser {
+
+  /**
+    * Parses a template file with the given contents.
+    */
+  def parse(str: String): Validation[String, Set[TemplateClass[Phase.Parsed]]] =
+    templateFile.parse(str) match {
+      case Parsed.Success(res, _) => Success(res)
+      case fail: Parsed.Failure   => Failure(ParseError(fail).getMessage)
+    }
+
   private val typeLabel: P[String] = P(CharsWhile(_.isLetterOrDigit).!)
 
-  val staticFrag: P[StaticFrag[String, String, Option[String]]] =
+  private val staticFrag: P[StaticFrag[Phase.Parsed]] =
     P(
       (CharsWhile { char =>
         !"[]{}\n".contains(char)
@@ -22,7 +33,7 @@ object TemplateParser {
           "\n"
         }).rep(min = 1).map(_.mkString).map(StaticFrag.apply))
 
-  val freeTextFrag: P[FreeTextFrag[String, String, Option[String]]] =
+  private val freeTextFrag: P[FreeTextFrag[Phase.Parsed]] =
     P(
       ("{" ~/ (CharsWhile(!"}\\".contains(_)) | ("\\" ~ AnyChar)).rep.! ~ "}")
         .flatMap { regExpStr =>
@@ -40,53 +51,53 @@ object TemplateParser {
         }
         .map(FreeTextFrag.empty))
 
-  val holeBindMode: P[Boolean] =
+  private val holeBindMode: P[Boolean] =
     P("+".?.!.map(_.nonEmpty))
 
-  val hole: P[Hole[String, String, Option[String]]] =
+  private val hole: P[Hole[Phase.Parsed]] =
     P(("[" ~/ holeBindMode ~ typeLabel ~ "]").map {
-      case (bindMode, typeLabell) => Hole.empty(typeLabell, bindMode)
+      case (bindMode, typeLabell) =>
+        Hole.empty[Phase.Parsed](typeLabell, bindMode)
     })
 
-  val frag: P[TemplateFrag[String, String, Option[String]]] =
+  private val frag: P[TemplateFrag[Phase.Parsed]] =
     P(NoCut(staticFrag | freeTextFrag | hole))
 
-  val templateBindMode: P[Boolean] =
+  private val templateBindMode: P[Boolean] =
     P("+".!.map { _ =>
       true
     } | "-".!.map { _ =>
       false
     })
 
-  val template: P[Template[String, String, Option[String]]] =
+  private val template: P[Template[Phase.Parsed]] =
     P((templateBindMode ~ NoCut((" " ~/ frag.rep) | "".!.map { _ =>
       Seq.empty
     })).map {
       case (bindMode, typeLabell) => Template(bindMode, typeLabell)
     })
 
-  val enumClassBody
-    : P[String => EnumTemplateClass[String, String, Option[String]]] =
+  private val enumClassBody: P[String => EnumTemplateClass[Phase.Parsed]] =
     P(("\n" ~/ template.rep(min = 1, sep = "\n")).map { templates =>
       { label: String =>
-        EnumTemplateClass(EnumTemplateType(label, None), templates.toSet)
+        EnumTemplateClass[Phase.Parsed](EnumTemplateType(label, None),
+                                        templates.toSet)
       }
     })
 
-  val unionClassBody
-    : P[String => UnionTemplateClass[String, String, Option[String]]] =
+  private val unionClassBody: P[String => UnionTemplateClass[Phase.Parsed]] =
     P((" = " ~/ typeLabel.rep(min = 1, sep = " | ")).map { frags =>
       { label =>
-        UnionTemplateClass(label, frags.toSet)
+        UnionTemplateClass[Phase.Parsed](label, frags.toSet)
       }
     })
 
-  val templateClass: P[TemplateClass[String, String, Option[String]]] =
+  private val templateClass: P[TemplateClass[Phase.Parsed]] =
     P((typeLabel ~/ NoCut(enumClassBody | unionClassBody)).map {
       case (label, fLabel) => fLabel(label)
     })
 
-  val templateFile: P[Set[TemplateClass[String, String, Option[String]]]] =
+  private val templateFile: P[Set[TemplateClass[Phase.Parsed]]] =
     P(templateClass.rep(sep = "\n\n").map { _.toSet } ~/ End)
 
   /**
