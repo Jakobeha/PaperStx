@@ -10,6 +10,11 @@ version := "0.1-SNAPSHOT"
 
 scalaVersion := "2.12.4"
 
+scalacOptions := Seq(
+  "-language:higherKinds",
+  "-language:implicitConversions"
+)
+
 scalaJSUseMainModuleInitializer := true
 mainClass in Compile := Some("paperstx.App")
 

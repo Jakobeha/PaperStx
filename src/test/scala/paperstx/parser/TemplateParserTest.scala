@@ -6,11 +6,17 @@ import fastparse.all._
 
 object TemplateParserTest extends TestSuite {
   override def tests = Tests {
-    val templateString = ResourceManager.readTextFile("templates/Scheme.pstx")
-    val templateAST = TemplateParser.templateFile.parse(templateString)
-    println(templateAST)
-    assertMatch(templateAST) {
-      case Parsed.Success(_, _) =>
+    def parseValidLang(filename: String) = {
+      val templateString =
+        ResourceManager.readTextFile(s"templates/$filename.pstx")
+      val templateAST = TemplateParser.templateFile.parse(templateString)
+      println(templateAST)
+      assertMatch(templateAST) {
+        case Parsed.Success(_, _) =>
+      }
     }
+
+    parseValidLang("Scheme")
+    parseValidLang("Haskell")
   }
 }
