@@ -11,6 +11,7 @@ version := "0.1-SNAPSHOT"
 scalaVersion := "2.12.4"
 
 scalaJSUseMainModuleInitializer := true
+mainClass in Compile := Some("paperstx.App")
 
 libraryDependencies ++= Seq(
   "org.scala-js" %%% "scalajs-dom" % "0.9.2",
@@ -26,3 +27,5 @@ npmDependencies in Compile ++= Seq(
   "react" -> "15.6.1",
   "react-dom" -> "15.6.1"
 )
+
+testFrameworks += new TestFramework("utest.runner.Framework")

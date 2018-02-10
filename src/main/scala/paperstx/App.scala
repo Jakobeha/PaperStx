@@ -2,10 +2,9 @@ package paperstx
 
 import org.scalajs.dom.document
 import paperstx.components.Main
+import CssSettings._
 
-import scala.scalajs.js.JSApp
-
-object App extends JSApp {
+object App {
   def main(): Unit = {
     Styles.addToDocument()
     Main().renderIntoDOM(document.getElementById("root"))
