@@ -20,7 +20,7 @@ libraryDependencies ++= Seq(
   "com.github.japgolly.scalacss" %%% "ext-react" % "0.5.3",
   "org.scalaz" %%% "scalaz-core" % "7.2.19",
   "com.lihaoyi" %%% "fastparse" % "1.0.0",
-  "com.lihaoyi" %%% "utest" % "0.4.4" % "test"
+  "com.lihaoyi" %%% "utest" % "0.6.0" % "test"
 )
 
 npmDependencies in Compile ++= Seq(
