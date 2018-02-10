@@ -1,0 +1,56 @@
+Def = TypeDef | ValueDef
+
+ValId = RegValId | DataValId
+
+TypeDef
+- data [+Type]
+    [DataEq]
+    [Deriving]
+- type [+Type] = [Type]
+- class [+Class] [TParam] where
+    [FunDefs]
+
+ValueDef
+- [+RegValId] :: [Type]
+- [+RegValId] = [Value]
+
+DataEq
+- = [+DataValId] [+Types]
+  [DataAlt]
+
+DataAlt
+-
+- | [+DataValId] [+Types]
+  [DataAlt]
+
+
+Deriving
+-
+- deriving ([Class], [Classes])
+
+Classes
+-
+- [Class], [Classes]
+
+Class
+- {[A-Z]\w*}
+
+Types
+-
+- [Type] [Types]
+
+Type
+- Int
+- Bool
+- Char
+- String
+- [[Type]]
+- [Type] [Type]
+- [Type] -> [Type]
+- [Type] [TParams]
+- [Type] [TParams] [Type]
+- {[A-Z]\w*}
+
+Value
+- [ValId]
+- [Value] [Value]
