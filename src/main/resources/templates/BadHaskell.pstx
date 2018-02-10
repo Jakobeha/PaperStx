@@ -5,16 +5,12 @@ TypeDef
     [DataEq]
     [Deriving]
 - type [+Type] = [Type]
-- class [+Class] [+TParam] where
-    [ValueDefs]
+- class [+Class] [TParam] where
+    [FunDefs]
 
 ValueDef
 - [+RegValId] :: [Type]
 - [+RegValId] = [Value]
-
-ValueDefs
--
-- [ValueDef] [ValueDefs]
 
 DataEq
 - = [+DataValId] [+Types]
@@ -72,10 +68,3 @@ RegValId
 
 DataValId
 + {[A-Z][A-Za-z0-9']*}
-
-TParam
-+ {[a-z][A-Za-z0-9']*}
-
-TParams
--
-- [TParam] [TParams]

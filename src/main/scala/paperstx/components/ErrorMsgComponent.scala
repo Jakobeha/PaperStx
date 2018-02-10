@@ -20,7 +20,7 @@ object ErrorMsgComponent {
           <.div(paperstx.Styles.errorNote,
                 "Note that pstx files have a ",
                 <.i("very strict"),
-                "syntax, even extra whitspace will make them invalid.")
+                " syntax - even extra whitspace will make them invalid.")
         )
       }
       .build

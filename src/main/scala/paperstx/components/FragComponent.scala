@@ -12,11 +12,12 @@ object FragComponent {
       .render_P {
         case StaticFrag(text) => <.pre(paperstx.Styles.staticFrag, text)
         case FreeTextFrag(constrainer, text) =>
-          <.input(
-            paperstx.Styles.freeTextFrag(valid = constrainer.test(text)),
-            ^.`type` := "text",
-            ^.`value` := text
-          )
+          <.div(paperstx.Styles.inlineWrapper,
+                <.input.text(
+                  paperstx.Styles.freeTextFrag(constrainer.test(text)),
+                  ^.width := (text.length * 16) + " px",
+                  ^.`value` := text
+                ))
         case Hole(typ, isBinding, content) =>
           content match {
             case None => <.div(paperstx.Styles.emptyHole(typ.colors))

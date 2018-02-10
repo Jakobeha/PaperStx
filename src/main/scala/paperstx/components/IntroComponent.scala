@@ -12,7 +12,7 @@ object IntroComponent {
       .render_P { errors =>
         <.div(
           paperstx.Styles.intro,
-          <.div(paperstx.Styles.introTitle, "PaperStx"),
+          <.img(paperstx.Styles.logo, ^.src := "images/logo/scala-js-logo.svg"),
           <.div(
             paperstx.Styles.introMsg,
             """

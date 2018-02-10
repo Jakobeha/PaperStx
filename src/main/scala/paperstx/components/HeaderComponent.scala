@@ -15,10 +15,7 @@ object HeaderComponent {
       .render_P { props =>
         <.div(
           paperstx.Styles.appHeader,
-          <.img(paperstx.Styles.appLogo,
-                ^.src := "images/logo/scala-js-logo.svg"),
-          <.img(paperstx.Styles.appLogo, ^.src := "images/logo/react-logo.svg"),
-          <.h2("Welcome to PaperStx"),
+          <.h1(paperstx.Styles.appTitle, "PaperStx"),
           LangSelectComponent(props.onLangSelect)
         )
       }

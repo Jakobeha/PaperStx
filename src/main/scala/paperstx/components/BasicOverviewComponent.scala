@@ -12,7 +12,7 @@ object BasicOverviewComponent {
       .render_P { templates =>
         <.div(
           paperstx.Styles.basicOverview,
-          templates.toTagMod(TemplateComponent.apply)
+          templates.toTagMod(SingleOverviewComponent.apply)
         )
       }
       .build
