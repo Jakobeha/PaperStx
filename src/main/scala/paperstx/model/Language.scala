@@ -28,3 +28,7 @@ case class Language[TPhase <: Phase](classes: Set[TemplateClass[TPhase]])
       .map(Language.apply[TNewPhase] _)
 
 }
+
+object Language {
+  type Full = Language[Phase.Full]
+}

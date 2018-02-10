@@ -9,3 +9,7 @@ case class TypedTemplate[TPhase <: Phase](typ: EnumTemplateType[TPhase#Color],
   def fitsIn(hole: Hole[Phase.FullType[TPhase]]): Boolean =
     hole.typ.isSuperset(this.typ) && hole.isBinding == template.isBinding
 }
+
+object TypedTemplate {
+  type Full = TypedTemplate[Phase.Full]
+}

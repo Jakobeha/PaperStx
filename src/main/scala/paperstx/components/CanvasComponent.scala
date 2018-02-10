@@ -4,14 +4,12 @@ import japgolly.scalajs.react.ScalaComponent
 import japgolly.scalajs.react.vdom.html_<^._
 import scalacss.ScalaCssReact._
 
-object Main {
+object CanvasComponent {
   val component =
-    ScalaComponent.builder[Unit]("Main")
-      .renderStatic(<.div(
-        paperstx.Styles.app,
-        Header(),
-        Content()))
+    ScalaComponent
+      .builder[Unit]("Blob")
+      .renderStatic(<.div(paperstx.Styles.canvas))
       .build
 
-  def apply() = component()
+  def apply(): VdomElement = component()
 }

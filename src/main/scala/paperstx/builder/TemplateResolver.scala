@@ -1,7 +1,6 @@
 package paperstx.builder
 
 import org.scalajs.dom.ext.Color
-import paperstx.model
 import paperstx.model._
 import paperstx.util.ColorHelper
 
@@ -11,7 +10,7 @@ import scalaz._
 object TemplateResolver {
   private case class ValidationResolver(context: Language[Phase.Parsed])
       extends PhaseTransformer[Phase.Parsed, Phase.Validated, BuildValidation] {
-    override def traverseTemplate(template: Nothing) = template
+    override def traverseTemplate(typedTemplate: Nothing) = typedTemplate
 
     override def traverseTemplateType(typeLabel: String) = {
       val ambiguousFailure = Validation.failureNel(
@@ -63,8 +62,7 @@ object TemplateResolver {
     */
   private object DifferResolve
       extends PhaseTransformer[Phase.Validated, Phase.Full, Differ] {
-    override def traverseTemplate(template: Template[Phase.Validated]) =
-      template.traversePhase(this)
+    override def traverseTemplate(typedTemplate: Nothing) = typedTemplate
 
     override def traverseTemplateType(templateType: TemplateType[Option[Color]])
       : Differ[TemplateType[Color]] =

@@ -25,7 +25,7 @@ case class FreeTextFrag[TPhase <: Phase](constrainer: RegExp, text: String)
 
 case class Hole[TPhase <: Phase](typ: TPhase#TemplateType,
                                  isBinding: Boolean,
-                                 content: Option[Blob[TPhase#Template]])
+                                 content: Option[Blob[TPhase#TypedTemplate]])
     extends TemplateFrag[TPhase]
     with PhaseTransformable[Hole, TPhase] {
   override def traversePhase[TNewPhase <: Phase, F[_]: Applicative](

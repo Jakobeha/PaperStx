@@ -1,9 +1,7 @@
 package paperstx.model
 
 import org.scalajs.dom.ext.Color
-import paperstx.util.TraverseFix
 
-import scala.collection.generic.CanBuildFrom
 import scalaz.Applicative
 import scalaz.Scalaz._
 import paperstx.util.TraverseFix._
@@ -25,7 +23,7 @@ case class EnumTemplateClass[TPhase <: Phase](
     (enumType.traverseColor(transformer.traverseColor) |@| templates
       .traverseF[F, Template[TNewPhase]] {
         _.traversePhase(transformer)
-      })(EnumTemplateClass.apply[TNewPhase] _)
+      })(EnumTemplateClass.apply)
 }
 
 case class UnionTemplateClass[TPhase <: Phase](
@@ -36,7 +34,7 @@ case class UnionTemplateClass[TPhase <: Phase](
   override def traversePhase[TNewPhase <: Phase, F[_]: Applicative](
       transformer: PhaseTransformer[TPhase, TNewPhase, F]) =
     (label.point[F] |@| subTypes.traverseF(transformer.traverseTemplateType))(
-      UnionTemplateClass.apply[TNewPhase] _)
+      UnionTemplateClass.apply)
 }
 
 object TemplateClass {
@@ -59,4 +57,12 @@ object TemplateClass {
       case unionClass: UnionTemplateClass[TPhase @unchecked] =>
         unionClass
     })
+}
+
+object EnumTemplateClass {
+  type Full = EnumTemplateClass[Phase.Full]
+}
+
+object UnionTemplateClass {
+  type Full = UnionTemplateClass[Phase.Full]
 }
