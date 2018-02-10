@@ -2,7 +2,7 @@ package paperstx.model
 
 import scalacss.internal.ValueT.Color
 
-case class Template[TType, TTemp, TColor](frags: Seq[TemplateFrag[TType, TTemp, TColor]]) {
+case class Template[TType, TTemp, TColor](isBinding: Boolean, frags: Seq[TemplateFrag[TType, TTemp, TColor]]) {
 
 }
 

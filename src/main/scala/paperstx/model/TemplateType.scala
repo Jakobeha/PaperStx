@@ -8,6 +8,10 @@ case class TemplateType[TColor](label: String,
     * Whether this type contains all instances of the other type.
     */
   def isSuperset(other: TemplateType[TColor]) = other.subTypes.subsetOf(this.subTypes)
+  /**
+    * Whether this type contains all instances of the other type.
+    */
+  def isSuperset(other: EnumTemplateType[TColor]) = this.subTypes.contains(other)
 }
 
 object TemplateType {
