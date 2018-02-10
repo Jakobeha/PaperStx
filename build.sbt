@@ -12,7 +12,8 @@ scalaVersion := "2.12.4"
 
 scalacOptions := Seq(
   "-language:higherKinds",
-  "-language:implicitConversions"
+  "-language:implicitConversions",
+  "-language:postfixOps"
 )
 
 scalaJSUseMainModuleInitializer := true

@@ -1,24 +1,47 @@
 package paperstx.model
 
-import scala.collection.generic.CanBuildFrom
-import scalacss.internal.ValueT.Color
+import org.scalajs.dom.ext.Color
+import paperstx.util.TraverseFix
 
-sealed trait TemplateClass[TPhase <: Phase] {}
+import scala.collection.generic.CanBuildFrom
+import scalaz.Applicative
+import scalaz.Scalaz._
+import paperstx.util.TraverseFix._
+
+sealed trait TemplateClass[TPhase <: Phase]
+    extends PhaseTransformable[TemplateClass, TPhase] {}
 
 case class EnumTemplateClass[TPhase <: Phase](
     enumType: EnumTemplateType[TPhase#Color],
     templates: Set[Template[TPhase]])
-    extends TemplateClass[TPhase] {}
+    extends TemplateClass[TPhase]
+    with PhaseTransformable[EnumTemplateClass, TPhase] {
+  val typedTemplates: Set[TypedTemplate[TPhase]] = templates.map {
+    TypedTemplate(enumType, _)
+  }
+
+  override def traversePhase[TNewPhase <: Phase, F[_]: Applicative](
+      transformer: PhaseTransformer[TPhase, TNewPhase, F]) =
+    (enumType.traverseColor(transformer.traverseColor) |@| templates
+      .traverseF[F, Template[TNewPhase]] {
+        _.traversePhase(transformer)
+      })(EnumTemplateClass.apply[TNewPhase] _)
+}
 
 case class UnionTemplateClass[TPhase <: Phase](
     label: String,
     subTypes: Set[TPhase#TemplateType])
-    extends TemplateClass[TPhase] {}
+    extends TemplateClass[TPhase]
+    with PhaseTransformable[UnionTemplateClass, TPhase] {
+  override def traversePhase[TNewPhase <: Phase, F[_]: Applicative](
+      transformer: PhaseTransformer[TPhase, TNewPhase, F]) =
+    (label.point[F] |@| subTypes.traverseF(transformer.traverseTemplateType))(
+      UnionTemplateClass.apply[TNewPhase] _)
+}
 
 object TemplateClass {
-  implicit class FullTypeTemplateClass[TOrig <: Phase](
-      self: TemplateClass[Phase.FullType[TOrig]]) {
-    val typ: TemplateType[TOrig#Color] = self match {
+  implicit class FullTypeTemplateClass(self: TemplateClass[Phase.Validated]) {
+    val typ: TemplateType[Option[Color]] = self match {
       case EnumTemplateClass(enumType, _) => TemplateType.lift(enumType)
       case UnionTemplateClass(label, subTypes) =>
         TemplateType.union(label, subTypes)
@@ -27,11 +50,8 @@ object TemplateClass {
 
   type Full = TemplateClass[Phase.Full]
 
-  def partition[TPhase <: Phase, That](
-      elems: Traversable[TemplateClass[TPhase]])(
-      implicit builder: CanBuildFrom[Traversable[TemplateClass[TPhase]],
-                                     TemplateClass[TPhase],
-                                     That]): (That, That) =
+  def partitionCases[TPhase <: Phase](elems: Set[TemplateClass[TPhase]])
+    : (Set[EnumTemplateClass[TPhase]], Set[UnionTemplateClass[TPhase]]) =
     (elems.collect {
       case enumClass: EnumTemplateClass[TPhase @unchecked] =>
         enumClass

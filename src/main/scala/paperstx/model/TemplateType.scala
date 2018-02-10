@@ -1,17 +1,33 @@
 package paperstx.model
 
-import scalacss.internal.ValueT.Color
+import org.scalajs.dom.ext.Color
+
+import scalaz.Functor
+import scalaz.Scalaz._
+import scalaz._
+import paperstx.util.TraverseFix._
 
 case class TemplateType[TColor](label: String,
                                 subTypes: Set[EnumTemplateType[TColor]]) {
+
   /**
     * Whether this type contains all instances of the other type.
     */
-  def isSuperset(other: TemplateType[TColor]) = other.subTypes.subsetOf(this.subTypes)
+  def isSuperset(other: TemplateType[TColor]) =
+    other.subTypes.subsetOf(this.subTypes)
+
   /**
     * Whether this type contains all instances of the other type.
     */
-  def isSuperset(other: EnumTemplateType[TColor]) = this.subTypes.contains(other)
+  def isSuperset(other: EnumTemplateType[TColor]) =
+    this.subTypes.contains(other)
+
+  def traverseColor[TNewColor, F[_]: Applicative](
+      f: TColor => F[TNewColor]): F[TemplateType[TNewColor]] = {
+    subTypes.traverseF { _.traverseColor(f) }.map {
+      TemplateType(this.label, _)
+    }
+  }
 }
 
 object TemplateType {

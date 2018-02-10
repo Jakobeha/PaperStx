@@ -10,12 +10,13 @@ import scalaz.{Failure, Success, Validation}
 object TemplateParser {
 
   /**
-    * Parses a template file with the given contents.
+    * Parses a language with the given contents.
     */
-  def parse(str: String): Validation[String, Set[TemplateClass[Phase.Parsed]]] =
-    templateFile.parse(str) match {
+  def parse(str: String): BuildValidation[Language[Phase.Parsed]] =
+    language.parse(str) match {
       case Parsed.Success(res, _) => Success(res)
-      case fail: Parsed.Failure   => Failure(ParseError(fail).getMessage)
+      case fail: Parsed.Failure =>
+        Validation.failureNel(ParseError(fail).getMessage)
     }
 
   private val typeLabel: P[String] = P(CharsWhile(_.isLetterOrDigit).!)
@@ -97,8 +98,12 @@ object TemplateParser {
       case (label, fLabel) => fLabel(label)
     })
 
-  private val templateFile: P[Set[TemplateClass[Phase.Parsed]]] =
-    P(templateClass.rep(sep = "\n\n").map { _.toSet } ~/ End)
+  private val language: P[Language[Phase.Parsed]] =
+    P(
+      templateClass
+        .rep(sep = "\n\n")
+        .map { _.toSet }
+        .map(Language.apply) ~/ End)
 
   /**
     * Tries to parse the string escaped by repeating itself.

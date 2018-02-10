@@ -1,19 +1,40 @@
 package paperstx.model
 
 import scala.scalajs.js.RegExp
+import scalaz.Applicative
+import scalaz.Scalaz._
 
-sealed trait TemplateFrag[TPhase] {}
+sealed trait TemplateFrag[TPhase <: Phase]
+    extends PhaseTransformable[TemplateFrag, TPhase] {}
 
 case class StaticFrag[TPhase <: Phase](text: String)
     extends TemplateFrag[TPhase]
+    with PhaseTransformable[StaticFrag, TPhase] {
+  override def traversePhase[TNewPhase <: Phase, F[_]: Applicative](
+      transformer: PhaseTransformer[TPhase, TNewPhase, F]) =
+    StaticFrag[TNewPhase](this.text).point[F]
+}
 
 case class FreeTextFrag[TPhase <: Phase](constrainer: RegExp, text: String)
     extends TemplateFrag[TPhase]
+    with PhaseTransformable[FreeTextFrag, TPhase] {
+  override def traversePhase[TNewPhase <: Phase, F[_]: Applicative](
+      transformer: PhaseTransformer[TPhase, TNewPhase, F]) =
+    FreeTextFrag[TNewPhase](this.constrainer, this.text).point[F]
+}
 
 case class Hole[TPhase <: Phase](typ: TPhase#TemplateType,
                                  isBinding: Boolean,
                                  content: Option[Blob[TPhase#Template]])
     extends TemplateFrag[TPhase]
+    with PhaseTransformable[Hole, TPhase] {
+  override def traversePhase[TNewPhase <: Phase, F[_]: Applicative](
+      transformer: PhaseTransformer[TPhase, TNewPhase, F]) = {
+    (transformer.traverseTemplateType(typ) |@| isBinding.point[F] |@| content
+      .traverse { _.traverseTemplate(transformer.traverseTemplate) })(
+      Hole.apply[TNewPhase])
+  }
+}
 
 object TemplateFrag {
   type Full = TemplateFrag[Phase.Full]
