@@ -6,10 +6,11 @@ object ColorHelper {
 
   /**
     * Up to a certain integer, each color corresponding to a different integer
-    * should be easily distinguisable from the others.
+    * should be relatively distinguisable from the others,
+    * and also be relatively easy on the eyes.
     */
   def maxDistinct(seed: Int): Color = {
-    fromHSL(seed * 0.12345f, 1, 0.5f)
+    fromHSL(seed * 0.12345f, 0.25f, 0.5f)
   }
 
   def fromHSL(h: Float, s: Float, l: Float): Color = {
@@ -24,6 +25,7 @@ object ColorHelper {
           } else if (t > 1f) {
             hueToRGB(p, q, t - 1f)
           } else if (t < 1f / 6f) {
+
             p + (q - p) * 6f * t
           } else if (t < 1f / 2f) {
             q

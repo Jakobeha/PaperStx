@@ -16,10 +16,11 @@ object BlobComponent {
 
         blob match {
           case FreeBlob(content) =>
-            <.div(paperstx.Styles.inlineWrapper,
-                  <.input.text(paperstx.Styles.freeBlob(outerType.colors),
-                               ^.width := (content.length * 16) + " px",
-                               ^.value := content))
+            <.div(
+              paperstx.Styles.inlineWrapper,
+              <.input.text(paperstx.Styles.freeBlob(outerType.colors),
+                           VdomStyle("width") := (content.length * 16) + " px",
+                           ^.value := content))
           case TemplateBlob(typedTemplate) =>
             <.div(paperstx.Styles.templateBlob,
                   TemplateComponent(typedTemplate))

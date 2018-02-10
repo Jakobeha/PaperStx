@@ -35,6 +35,18 @@ object Styles extends StyleSheet.Inline {
     display.inline
   )
 
+  val multiTint = style(
+    genSnap,
+    width(100 %%),
+    height(100 %%),
+    display.flex,
+    opacity(0.25)
+  )
+
+  val subTint = style(
+    flexGrow(1)
+  )
+
   val app = style(
     )
 
@@ -123,7 +135,7 @@ object Styles extends StyleSheet.Inline {
 
   val singleOverview = style(
     display.block,
-    padding(h = 0 px, v = 2 px)
+    padding(h = 0 px, v = 4 px)
   )
 
   val canvas = style(
@@ -135,7 +147,7 @@ object Styles extends StyleSheet.Inline {
   val genStxBlock = style(
     fontFamily(codeFont),
     fontSize(16 px),
-    borderWidth(1 px),
+    borderWidth(2 px),
     borderRadius(8 px),
     padding(1 px)
   )
@@ -152,11 +164,10 @@ object Styles extends StyleSheet.Inline {
   val templateBlob = style(
     )
 
-  def template(color: Color) = templateConst
-
-  val templateConst = style(
+  val template = style(
     genStxBlock,
     borderColor.rgba(128, 128, 128, 0.5),
+    padding(2 px),
     display.inline
   )
 
@@ -175,13 +186,11 @@ object Styles extends StyleSheet.Inline {
       borderWidth(1 px),
       borderColor.rgb(160, 160, 160),
       borderRadius(2 px),
-      display.inline
+      display.inlineBlock
     )
   }
 
-  def emptyHole(colors: Set[Color]) = emptyHoleConst
-
-  val emptyHoleConst = style(
+  val emptyHole = style(
     backgroundImage := "url(./images/textures/fuzz.png)",
     backgroundRepeat := "repeat",
     display.inlineBlock,

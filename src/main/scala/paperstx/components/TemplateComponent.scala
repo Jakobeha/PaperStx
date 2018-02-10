@@ -13,7 +13,8 @@ object TemplateComponent {
         val typ = typedTemplate.typ
         val template = typedTemplate.template
 
-        <.div(paperstx.Styles.template(typ.color),
+        <.div(paperstx.Styles.template,
+              ^.backgroundColor := typ.color.toString,
               template.frags.toTagMod(FragComponent.apply))
       }
       .build
