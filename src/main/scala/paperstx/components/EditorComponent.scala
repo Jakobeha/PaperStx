@@ -17,7 +17,6 @@ object EditorComponent {
 
     def startDrag(event: ReactDragEventFromHtml,
                   block: TypedTemplate.Full): Callback = {
-      //TODO Implement
       Callback {}
     }
 

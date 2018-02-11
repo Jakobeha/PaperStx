@@ -55,13 +55,14 @@ object Styles extends StyleSheet.Inline {
     genMsg,
     backgroundColor.rgb(32, 32, 32),
     color.white,
-    height(25 vh),
+    height(128 px),
     padding(h = 16 px, v = 0 px),
     fontSize(24 px),
   )
 
   val appTitle = style(
-    margin(8 px)
+    padding(12 px),
+    margin(0 px)
   )
 
   val langSelect = style(
@@ -78,7 +79,7 @@ object Styles extends StyleSheet.Inline {
 
   val introMsg = style(
     fontSize(32 px),
-    padding(h = 6.125 %%, v = 0 px)
+    padding(l = 6.125 %%, r = 6.125 %%, t = 0 px, b = 32 px)
   )
 
   val logo = style(
@@ -115,7 +116,7 @@ object Styles extends StyleSheet.Inline {
     backgroundColor.rgb(240, 240, 240),
     float.left,
     width(25 %%),
-    height(75 vh),
+    height := "calc(100vh - 128px)",
     overflow.scroll
   )
 
