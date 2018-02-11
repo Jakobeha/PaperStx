@@ -30,12 +30,26 @@ case class TemplateBlob[T](content: T) extends Blob[T] {
 }
 
 object Blob {
+  implicit class FullBlob(self: Blob.Full) {
+
+    /**
+      * Whether the blob can fill the hole with the given skeleton.
+      * Free blobs can fill any hole, template blobs can fill the same
+      * holes as their templates.
+      */
+    def fitsIn(skeleton: HoleSkeleton): Boolean = self match {
+      case FreeBlob(_)            => true
+      case TemplateBlob(template) => template.fitsIn(skeleton)
+    }
+  }
+
   type Full = Blob[TypedTemplate.Full]
 
   implicit class TemplateBlob[TPhase <: Phase](self: Blob[Template[TPhase]]) {
-    def assignType(
-        typ: EnumTemplateType[TPhase#Color]): Blob[TypedTemplate[TPhase]] = {
-      self.overTemplate { TypedTemplate(typ, _) }
+    def assignType(typ: EnumTemplateType): Blob[TypedTemplate[TPhase]] = {
+      self.overTemplate {
+        TypedTemplate(typ, _)
+      }
     }
   }
 }

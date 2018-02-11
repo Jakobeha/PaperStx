@@ -28,6 +28,8 @@ object HueColor {
     "purple" -> (280f / 360f)
   )
 
+  private val colorHues = colorHueMap.values.toSeq
+
   def parse(text: String): Option[HueColor] =
     colorHueMap.get(text).map(HueColor.apply)
 
@@ -37,6 +39,6 @@ object HueColor {
     * and also be relatively easy on the eyes.
     */
   def maxDistinct(seed: Int): HueColor = {
-    HueColor(seed * 0.12345f)
+    HueColor(colorHues.apply(seed % colorHues.length))
   }
 }

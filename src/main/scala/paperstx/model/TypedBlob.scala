@@ -1,6 +1,6 @@
 package paperstx.model
 
-case class TypedBlob[TPhase <: Phase](outerType: TemplateType[TPhase#Color],
+case class TypedBlob[TPhase <: Phase](outerType: TemplateType,
                                       blob: Blob[TPhase#TypedTemplate]) {}
 
 object TypedBlob {
@@ -10,5 +10,5 @@ object TypedBlob {
     * Gives the `Blob` an undefined type.
     */
   def undefinedType[TPhase <: Phase](blob: Blob[TPhase#TypedTemplate]) =
-    TypedBlob(TemplateType.undefined[TPhase#Color], blob)
+    TypedBlob(TemplateType.undefined, blob)
 }

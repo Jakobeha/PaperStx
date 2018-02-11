@@ -55,8 +55,16 @@ object FreeTextFrag {
 }
 
 object Hole {
+  implicit class FullHole(private val self: Hole.Full) {
+    val skeleton: HoleSkeleton = HoleSkeleton(self.typ, self.isBinding)
+  }
+
   type Full = Hole[Phase.Full]
 
+  /**
+    * Guarenteed not to have any contents.
+    * Useful for checking if an element could be content.
+    */
   /**
     * A hole with no elements.
     */

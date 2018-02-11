@@ -5,7 +5,7 @@ import paperstx.model._
 import paperstx.util.RegExpHelper
 
 import scala.scalajs.js.{JavaScriptException, RegExp, SyntaxError}
-import scalaz.{Failure, Success, Validation}
+import scalaz.{Success, Validation}
 
 object TemplateParser {
 
@@ -39,7 +39,9 @@ object TemplateParser {
       ("{" ~/ (CharsWhile(!"}\\".contains(_)) | ("\\" ~ AnyChar)).rep.! ~ "}")
         .flatMap { regExpStr =>
           try {
-            val regExp = RegExp(regExpStr)
+            //Start and end conditions are implied
+            val implicitRegExpStr = "^" + regExpStr + "$"
+            val regExp = RegExp(implicitRegExpStr)
             Pass.map { _ =>
               regExp
             }
@@ -81,8 +83,7 @@ object TemplateParser {
   private val enumClassBody: P[String => EnumTemplateClass[Phase.Parsed]] =
     P(("\n" ~/ template.rep(min = 1, sep = "\n")).map { templates =>
       { label: String =>
-        EnumTemplateClass[Phase.Parsed](EnumTemplateType(label, None),
-                                        templates)
+        EnumTemplateClass[Phase.Parsed](EnumTemplateType(label), templates)
       }
     })
 

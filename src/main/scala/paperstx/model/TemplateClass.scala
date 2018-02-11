@@ -1,7 +1,5 @@
 package paperstx.model
 
-import paperstx.util.HueColor
-
 import scalaz.Applicative
 import scalaz.Scalaz._
 import paperstx.util.TraverseFix._
@@ -9,9 +7,8 @@ import paperstx.util.TraverseFix._
 sealed trait TemplateClass[TPhase <: Phase]
     extends PhaseTransformable[TemplateClass, TPhase] {}
 
-case class EnumTemplateClass[TPhase <: Phase](
-    enumType: EnumTemplateType[TPhase#Color],
-    templates: Seq[Template[TPhase]])
+case class EnumTemplateClass[TPhase <: Phase](enumType: EnumTemplateType,
+                                              templates: Seq[Template[TPhase]])
     extends TemplateClass[TPhase]
     with PhaseTransformable[EnumTemplateClass, TPhase] {
   val typedTemplates: Seq[TypedTemplate[TPhase]] = templates.map {
@@ -20,7 +17,7 @@ case class EnumTemplateClass[TPhase <: Phase](
 
   override def traversePhase[TNewPhase <: Phase, F[_]: Applicative](
       transformer: PhaseTransformer[TPhase, TNewPhase, F]) =
-    (enumType.traverseColor(transformer.traverseColor) |@| templates
+    (enumType.point[F] |@| templates
       .traverseF[F, Template[TNewPhase]] {
         _.traversePhase(transformer)
       })(EnumTemplateClass.apply)
@@ -38,8 +35,8 @@ case class UnionTemplateClass[TPhase <: Phase](
 }
 
 object TemplateClass {
-  implicit class FullTypeTemplateClass(self: TemplateClass[Phase.Validated]) {
-    val typ: TemplateType[Option[HueColor]] = self match {
+  implicit class FullTypeTemplateClass(self: TemplateClass.Full) {
+    val typ: TemplateType = self match {
       case EnumTemplateClass(enumType, _) => TemplateType.lift(enumType)
       case UnionTemplateClass(label, subTypes) =>
         TemplateType.union(label, subTypes)

@@ -1,6 +1,11 @@
 package paperstx.components
 
-import japgolly.scalajs.react.{Callback, ScalaComponent, ReactDragEventFromHtml}
+import japgolly.scalajs.react.{
+  Callback,
+  ReactDragEventFromHtml,
+  ReactMouseEventFromHtml,
+  ScalaComponent
+}
 import japgolly.scalajs.react.vdom.html_<^._
 import paperstx.model._
 
@@ -19,9 +24,20 @@ object TemplateComponent {
         val typedTemplate = props.typedTemplate
         val onTemplateChange = props.onTemplateChange
         val onDragStart = props.onDragStart
+
         <.div(
           paperstx.Styles.singleOverview,
-          BlockComponent.apply(typedTemplate, onTemplateChange, onDragStart))
+          BlockComponent.apply(
+            typedTemplate,
+            onTemplateChange,
+            onDragStart,
+            //Templates can't be filled or emptied, like they can't be dragged around.
+            //This enforces that rule.
+            onFillOrEmpty = { _ =>
+              Callback.empty
+            }
+          )
+        )
       }
       .build
 

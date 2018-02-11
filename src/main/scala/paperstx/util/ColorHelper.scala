@@ -15,7 +15,6 @@ object ColorHelper {
           } else if (t > 1f) {
             hueToRGB(p, q, t - 1f)
           } else if (t < 1f / 6f) {
-
             p + (q - p) * 6f * t
           } else if (t < 1f / 2f) {
             q

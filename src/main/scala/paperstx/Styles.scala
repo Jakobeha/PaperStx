@@ -155,8 +155,9 @@ object Styles extends StyleSheet.Inline {
   val genStxBlock = style(
     fontFamily(codeFont),
     fontSize(16 px),
-    borderWidth(2 px),
+    borderWidth(1 px),
     borderRadius(8 px),
+    borderStyle.solid,
     padding(1 px)
   )
 
@@ -170,11 +171,17 @@ object Styles extends StyleSheet.Inline {
           backgroundColor.transparent
         },
         color(if (isValid) black else darkred),
-        margin(0 px),
+        height(14 px),
+        if (hasBackground) {
+          margin(2 px)
+        } else {
+          margin(0 px)
+        },
         padding(2 px),
         borderWidth(1 px),
         borderColor.rgb(160, 160, 160),
         borderRadius(2 px),
+        borderStyle.solid,
         display.inlineBlock
       )
   }
@@ -187,8 +194,11 @@ object Styles extends StyleSheet.Inline {
   val template = style(
     genStxBlock,
     borderColor.rgba(128, 128, 128, 0.5),
+    borderStyle.solid,
     padding(2 px),
-    display.inline,
+    minWidth(12 px),
+    minHeight(18 px),
+    display.inlineBlock,
     cursor.pointer,
     userSelect := "none"
   )
@@ -211,6 +221,6 @@ object Styles extends StyleSheet.Inline {
   )
 
   val fullHole = style(
-    display.block
+    display.inlineBlock
   )
 }

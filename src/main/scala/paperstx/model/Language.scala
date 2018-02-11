@@ -16,10 +16,10 @@ case class Language[TPhase <: Phase](classes: Seq[TemplateClass[TPhase]])
   val unionClassesByLabel: Map[String, Seq[UnionTemplateClass[TPhase]]] =
     unionClasses.groupBy { _.label }
 
-  val enumTypes: Seq[EnumTemplateType[TPhase#Color]] = enumClasses.map {
+  val enumTypes: Seq[EnumTemplateType] = enumClasses.map {
     _.enumType
   }
-  val enumTypesByLabel: Map[String, Seq[EnumTemplateType[TPhase#Color]]] =
+  val enumTypesByLabel: Map[String, Seq[EnumTemplateType]] =
     enumTypes.groupBy { _.label }
 
   def setEnumClasses(

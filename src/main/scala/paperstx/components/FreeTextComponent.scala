@@ -23,16 +23,13 @@ object FreeTextComponent {
         val hasBackground = props.hasBackground
         val onTextChange = props.onTextChange
 
-        <.div(
-          paperstx.Styles.inlineWrapper,
-          <.input.text(
-            paperstx.Styles.freeText(isValid, hasBackground),
-            ^.width := s"${Math.max(text.length, 1) * 10}px",
-            ^.onChange ==> { event: ReactEventFromInput =>
-              onTextChange(event.target.value)
-            },
-            ^.`value` := text
-          )
+        <.input.text(
+          paperstx.Styles.freeText(isValid, hasBackground),
+          ^.width := s"${Math.max(text.length, 1) * 10}px",
+          ^.onChange ==> { event: ReactEventFromInput =>
+            onTextChange(event.target.value)
+          },
+          ^.`value` := text
         )
       }
       .build

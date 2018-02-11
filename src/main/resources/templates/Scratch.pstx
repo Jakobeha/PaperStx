@@ -1,0 +1,54 @@
+Hat
+- When Green Flag Clicked
+- When {\w} Key Pressed
+- When This Sprite Clicked
+
+Stack
+- Move {[0-9]+} Steps
+- Turn {[0-9][0-9][0-9](\.[0-9]+)?} Degrees
+- Point Towards {\w+}
+- Go to X: {[0-9][0-9][0-9]} Y: {[0-9][0-9][0-9]}
+- Change X by {[0-9]+}
+- Change Y by {[0-9]+}
+- If on Edge, Bounce
+
+Boolean
+- {[0-9]+(\.[0-9]+)?} > {[0-9]+(\.[0-9]+)?}
+- {[0-9]+(\.[0-9]+)?} < {[0-9]+(\.[0-9]+)?}
+- {[0-9]+(\.[0-9]+)?} = {[0-9]+(\.[0-9]+)?}
+- [Boolean] and [Boolean]
+- [Boolean] or [Boolean]
+- Not [Boolean]
+
+Reporter
+- Distance to {\w+}
+- Answer
+- {[0-9]+(\.[0-9]+)?} + {[0-9]+(\.[0-9]+)?}
+- {[0-9]+(\.[0-9]+)?} - {[0-9]+(\.[0-9]+)?}
+- {[0-9]+(\.[0-9]+)?} Mod {[0-9]+(\.[0-9]+)?}
+
+C
+- Repeat {[0-9]+}
+    [Inline]
+- Forever
+    [InlineCap]
+- If [Boolean] Then
+    [Inline]
+- If [Boolean] Then
+    [Inline]
+  Else
+    [Inline]
+- Repeat Until [Boolean]
+    [Inline]
+
+Inline = Hat | C
+
+InlineCap = Hat | C | Cap
+
+Cap
+- Step All
+
+RotationStyle
+- Left-right
+- Don't rotate
+- All around
