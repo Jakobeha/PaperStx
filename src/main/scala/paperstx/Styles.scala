@@ -2,6 +2,8 @@ package paperstx
 
 import CssSettings._
 
+import scalacss.internal.Attr
+
 object Styles extends StyleSheet.Inline {
   import dsl._
 
@@ -53,8 +55,8 @@ object Styles extends StyleSheet.Inline {
     genMsg,
     backgroundColor.rgb(32, 32, 32),
     color.white,
-    height(12.5 %%),
-    padding(16 px),
+    height(25 vh),
+    padding(h = 16 px, v = 0 px),
     fontSize(24 px),
   )
 
@@ -113,7 +115,7 @@ object Styles extends StyleSheet.Inline {
     backgroundColor.rgb(240, 240, 240),
     float.left,
     width(25 %%),
-    height(100 %%),
+    height(75 vh),
     overflow.scroll
   )
 
@@ -179,7 +181,9 @@ object Styles extends StyleSheet.Inline {
     genStxBlock,
     borderColor.rgba(128, 128, 128, 0.5),
     padding(2 px),
-    display.inline
+    display.inline,
+    cursor.pointer,
+    userSelect := "none"
   )
 
   val staticFrag = style(

@@ -41,14 +41,16 @@ object EditorComponent {
 
   val component =
     ScalaComponent
-    //Don't think setting property is the "right" way,
-    //but I can't see any problems besides wasted data
-    //and no clear (to me) better way.
+    //Don't think this is the "right" way, but it works
+    //but I don't see any problems.
       .builder[Language.Full]("Editor")
       .initialStateFromProps { language =>
         State(language, Canvas.empty)
       }
       .renderBackend[Backend]
+      .componentWillReceiveProps { self =>
+        self.setState(State(self.nextProps, Canvas.empty))
+      }
       .build
 
   def init(langauge: Language.Full): VdomElement = component(langauge)

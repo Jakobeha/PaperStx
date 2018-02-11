@@ -27,7 +27,7 @@ object FreeTextComponent {
           paperstx.Styles.inlineWrapper,
           <.input.text(
             paperstx.Styles.freeText(isValid, hasBackground),
-            ^.width := s"${(text.length + 1) * 16}px",
+            ^.width := s"${Math.max(text.length, 1) * 10}px",
             ^.onChange ==> { event: ReactEventFromInput =>
               onTextChange(event.target.value)
             },

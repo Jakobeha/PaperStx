@@ -59,7 +59,7 @@ Type
 - [Type] -> [Type]
 - [Type] [TParams]
 - [Type] [TParams] [Type]
-+ {[A-Z]\w*}
++ {[A-Z][A-Za-z0-9']*}
 
 Value
 - [ValId]
