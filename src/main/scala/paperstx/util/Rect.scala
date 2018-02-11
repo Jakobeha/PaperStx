@@ -7,7 +7,16 @@ case class Rect(left: Double,
                 top: Double,
                 bottom: Double,
                 width: Double,
-                height: Double) {}
+                height: Double) {
+  def outset(amount: Double): Rect = {
+    Rect(left = this.left - amount,
+         right = this.right + amount,
+         top = this.top - amount,
+         bottom = this.bottom + amount,
+         width = this.width + (amount * 2),
+         height = this.height + (amount * 2))
+  }
+}
 
 object Rect {
   def apply(clientRect: ClientRect): Rect =

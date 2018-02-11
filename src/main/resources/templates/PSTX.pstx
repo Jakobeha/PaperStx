@@ -1,0 +1,35 @@
+MultiLineArb
+- {.*}
+  {.*}
+- {.*}
+  [MultiLineArb]
+
+Block
+- - {.*}
+- - [MultiLineArb]
+
+MoreBlocks
+- [Block]
+  [Blocks]
+
+Blocks = Block | MoreBlocks
+
+EnumClass
+- {[A-Za-z]+}
+  [Blocks]
+
+UnionClass
+- {[A-Za-z]+} = [Union]
+
+Class = EnumClass | UnionClass
+
+Union
+- {[A-Za-z]+}
+- [Union] | [Union]
+
+Language = Class | MultiLang
+
+MultiLang
+- [Class]
+  
+  [Language]

@@ -18,7 +18,7 @@ object IntroComponent {
             """
                   |Have you ever seen "block syntax"?
                   |PaperStx allows you to create your own block syntax easily.
-                  |Unlike text, block syntax directly the structure of the text.
+                  |Unlike text, block syntax directly encodes the structure of the text.
                   |It makes it harder to form bad expressions.
                   |And it makes it easier to create your own syntax,
                   |because you don't need to worry about e.g. ambiguous parsing.

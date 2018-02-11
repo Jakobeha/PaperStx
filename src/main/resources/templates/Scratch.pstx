@@ -1,7 +1,10 @@
 Hat
 - When Green Flag Clicked
+  [InlineCaps]
 - When {\w} Key Pressed
+  [InlineCaps]
 - When This Sprite Clicked
+  [InlineCaps]
 
 Stack
 - Move {[0-9]+} Steps
@@ -28,27 +31,37 @@ Reporter
 - {[0-9]+(\.[0-9]+)?} Mod {[0-9]+(\.[0-9]+)?}
 
 C
-- Repeat {[0-9]+}
-    [Inline]
+- Repeat {[0-9]+} Times
+    [Inlines]
 - Forever
     [InlineCap]
 - If [Boolean] Then
-    [Inline]
+    [Inlines]
 - If [Boolean] Then
-    [Inline]
+    [Inlines]
   Else
-    [Inline]
+    [Inlines]
 - Repeat Until [Boolean]
-    [Inline]
+    [Inlines]
 
-Inline = Hat | C
+Inline = Stack | C
 
-InlineCap = Hat | C | Cap
+InlineCap = Inline | Cap
 
 Cap
-- Step All
+- Stop All
 
 RotationStyle
 - Left-right
 - Don't rotate
 - All around
+
+InlineCaps
+- [InlineCap]
+- [InlineCap]
+  [InlineCaps]
+
+Inlines
+- [Inline]
+- [Inline]
+  [Inlines]

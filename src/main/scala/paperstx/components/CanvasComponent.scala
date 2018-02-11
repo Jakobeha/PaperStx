@@ -86,7 +86,7 @@ object CanvasComponent {
             val selfDOM = global.document.getElementById("canvas").asInstanceOf[html.Element]
             val myBounds = Rect(selfDOM.getBoundingClientRect())
             val mousePos = selection.mousePos
-            val isInBody = mousePos.isInRect(myBounds)
+            val isInBody = mousePos.isInRect(myBounds.outset(-32))
 
             val selectedExprRendered = PhysBlobComponent(
               selectedExpr,

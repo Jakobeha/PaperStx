@@ -21,3 +21,7 @@ Def
 Type
 - Number
 - String
+
+Rec
+- -
+- [Rec]-[Rec]
