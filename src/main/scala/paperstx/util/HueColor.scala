@@ -39,6 +39,6 @@ object HueColor {
     * and also be relatively easy on the eyes.
     */
   def maxDistinct(seed: Int): HueColor = {
-    HueColor(colorHues.apply(seed % colorHues.length))
+    HueColor(colorHues.apply(Math.abs(seed % colorHues.length)))
   }
 }
