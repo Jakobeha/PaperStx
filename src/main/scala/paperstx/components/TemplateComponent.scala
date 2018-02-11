@@ -1,26 +1,33 @@
 package paperstx.components
 
-import japgolly.scalajs.react.ScalaComponent
+import japgolly.scalajs.react.{Callback, ScalaComponent, ReactDragEventFromHtml}
 import japgolly.scalajs.react.vdom.html_<^._
 import paperstx.model._
+
 import scalacss.ScalaCssReact._
 
 object TemplateComponent {
+  case class Props(
+      typedTemplate: TypedTemplate.Full,
+      onTemplateChange: TypedTemplate.Full => Callback,
+      onDragStart: (ReactDragEventFromHtml, TypedTemplate.Full) => Callback)
+
   val component =
     ScalaComponent
-      .builder[TypedTemplate.Full]("Template")
-      .render_P { typedTemplate =>
-        val typ = typedTemplate.typ
-        val template = typedTemplate.template
-
-        <.div(paperstx.Styles.template,
-              ^.backgroundColor := typ.color
-                .specify(saturation = 0.75f, brightness = 0.5f)
-                .toString,
-              template.frags.toTagMod(FragComponent.apply))
+      .builder[Props]("SingleOverview")
+      .render_P { props =>
+        val typedTemplate = props.typedTemplate
+        val onTemplateChange = props.onTemplateChange
+        val onDragStart = props.onDragStart
+        <.div(
+          paperstx.Styles.singleOverview,
+          BlockComponent.apply(typedTemplate, onTemplateChange, onDragStart))
       }
       .build
 
-  def apply(typedTemplate: TypedTemplate.Full): VdomElement =
-    component(typedTemplate)
+  def apply(template: TypedTemplate.Full,
+            onTemplateChange: TypedTemplate.Full => Callback,
+            onDragStart: (ReactDragEventFromHtml,
+                          TypedTemplate.Full) => Callback): VdomElement =
+    component(Props(template, onTemplateChange, onDragStart))
 }

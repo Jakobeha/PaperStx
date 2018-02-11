@@ -10,7 +10,7 @@ import scalacss.ScalaCssReact._
 object MainComponent {
   case class State(selectedLangSrc: Option[BuildValidation[String]])
 
-  case class Backend(scope: BackendScope[Unit, State]) {
+  class Backend(scope: BackendScope[Unit, State]) {
     def render(state: State): VdomElement = {
       <.div(paperstx.Styles.app, HeaderComponent(onLangSelect = { newLangSrc =>
         scope.setState(State(newLangSrc))

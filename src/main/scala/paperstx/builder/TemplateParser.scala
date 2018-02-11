@@ -82,7 +82,7 @@ object TemplateParser {
     P(("\n" ~/ template.rep(min = 1, sep = "\n")).map { templates =>
       { label: String =>
         EnumTemplateClass[Phase.Parsed](EnumTemplateType(label, None),
-                                        templates.toSet)
+                                        templates)
       }
     })
 
@@ -99,11 +99,7 @@ object TemplateParser {
     })
 
   private val language: P[Language[Phase.Parsed]] =
-    P(
-      templateClass
-        .rep(sep = "\n\n")
-        .map { _.toSet }
-        .map(Language.apply) ~/ End)
+    P(templateClass.rep(sep = "\n\n").map(Language.apply) ~/ End)
 
   /**
     * Tries to parse the string escaped by repeating itself.

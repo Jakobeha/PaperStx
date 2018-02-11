@@ -15,12 +15,12 @@ case class StaticFrag[TPhase <: Phase](text: String)
     StaticFrag[TNewPhase](this.text).point[F]
 }
 
-case class FreeTextFrag[TPhase <: Phase](constrainer: RegExp, text: String)
+case class FreeTextFrag[TPhase <: Phase](validator: RegExp, text: String)
     extends TemplateFrag[TPhase]
     with PhaseTransformable[FreeTextFrag, TPhase] {
   override def traversePhase[TNewPhase <: Phase, F[_]: Applicative](
       transformer: PhaseTransformer[TPhase, TNewPhase, F]) =
-    FreeTextFrag[TNewPhase](this.constrainer, this.text).point[F]
+    FreeTextFrag[TNewPhase](this.validator, this.text).point[F]
 }
 
 case class Hole[TPhase <: Phase](typ: TPhase#TemplateType,
@@ -50,8 +50,8 @@ object FreeTextFrag {
   /**
     * A free text fragment with no text.
     */
-  def empty[TPhase <: Phase](constrainer: RegExp): FreeTextFrag[TPhase] =
-    FreeTextFrag(constrainer, text = "")
+  def empty[TPhase <: Phase](validator: RegExp): FreeTextFrag[TPhase] =
+    FreeTextFrag(validator, text = "")
 }
 
 object Hole {

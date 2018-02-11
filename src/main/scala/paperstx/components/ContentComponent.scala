@@ -24,7 +24,7 @@ object ContentComponent {
                 TemplateBuilder.build(languageSrccc) match {
                   case Failure(errors) =>
                     ErrorMsgComponent(errors.distinct.to[Seq])
-                  case Success(language) => EditorComponent(language)
+                  case Success(language) => EditorComponent.init(language)
                 }
             }
         }

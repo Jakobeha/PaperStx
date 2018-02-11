@@ -11,10 +11,10 @@ sealed trait TemplateClass[TPhase <: Phase]
 
 case class EnumTemplateClass[TPhase <: Phase](
     enumType: EnumTemplateType[TPhase#Color],
-    templates: Set[Template[TPhase]])
+    templates: Seq[Template[TPhase]])
     extends TemplateClass[TPhase]
     with PhaseTransformable[EnumTemplateClass, TPhase] {
-  val typedTemplates: Set[TypedTemplate[TPhase]] = templates.map {
+  val typedTemplates: Seq[TypedTemplate[TPhase]] = templates.map {
     TypedTemplate(enumType, _)
   }
 
@@ -48,8 +48,8 @@ object TemplateClass {
 
   type Full = TemplateClass[Phase.Full]
 
-  def partitionCases[TPhase <: Phase](elems: Set[TemplateClass[TPhase]])
-    : (Set[EnumTemplateClass[TPhase]], Set[UnionTemplateClass[TPhase]]) =
+  def partitionCases[TPhase <: Phase](elems: Seq[TemplateClass[TPhase]])
+    : (Seq[EnumTemplateClass[TPhase]], Seq[UnionTemplateClass[TPhase]]) =
     (elems.collect {
       case enumClass: EnumTemplateClass[TPhase @unchecked] =>
         enumClass
