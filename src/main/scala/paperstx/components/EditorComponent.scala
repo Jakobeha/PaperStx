@@ -4,20 +4,34 @@ import japgolly.scalajs.react.component.Scala.BackendScope
 import japgolly.scalajs.react.{Callback, ReactDragEventFromHtml, ScalaComponent}
 import japgolly.scalajs.react.vdom.html_<^._
 import paperstx.model._
+import paperstx.util.{Rect, Vector2}
 
 import scalacss.ScalaCssReact._
 
 object EditorComponent {
-  case class State(language: Language.Full, canvas: Canvas)
+  case class State(language: Language.Full, canvas: Canvas) {
+    def overCanvas(f: Canvas => Canvas): State = {
+      State(this.language, f(this.canvas))
+    }
+  }
 
   class Backend(scope: BackendScope[Language.Full, State]) {
     def setLanguage(newLanguage: Language.Full): Callback = {
       scope.modState { _.copy(language = newLanguage) }
     }
 
+    def setCanvas(newCanvas: Canvas): Callback = {
+      scope.modState { _.copy(canvas = newCanvas) }
+    }
+
     def startDrag(event: ReactDragEventFromHtml,
                   block: TypedTemplate.Full): Callback = {
-      Callback {}
+      val templateElem = event.target
+      val elemBounds = Rect(templateElem.getBoundingClientRect())
+      val newBlob = PhysBlob(elemBounds, TemplateBlob(block))
+      val newSelection =
+        Selection(newBlob, Vector2(event.clientX, event.clientY))
+      scope.modState { _.overCanvas { _.addSelectExpr(newSelection) } }
     }
 
     def render(state: State): VdomElement = {
@@ -29,7 +43,7 @@ object EditorComponent {
         FullOverviewComponent(language,
                               onLanguageChange = setLanguage,
                               onDragStart = startDrag),
-        CanvasComponent(canvas)
+        CanvasComponent(canvas, onCanvasChange = setCanvas)
       )
     }
   }

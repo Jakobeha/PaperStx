@@ -7,6 +7,8 @@ import scalacss.internal.Attr
 object Styles extends StyleSheet.Inline {
   import dsl._
 
+  val physBlobZIndex = 2 //Higher than all other elements
+
   val mainFont = fontFace("mainFont")(
     _.src("local(Tahoma)").fontStretch.ultraCondensed.fontWeight._200
   )
@@ -15,29 +17,29 @@ object Styles extends StyleSheet.Inline {
     _.src("local(Menlo)")
   )
 
-  val genSnap = style(
+  val genPassive = style(
     margin(0 px),
     padding(0 px)
   )
 
   val genMsg = style(
-    genSnap,
+    genPassive,
     textAlign.center,
     fontFamily(mainFont)
   )
 
   val blockWrapper = style(
-    genSnap,
+    genPassive,
     display.block
   )
 
   val inlineWrapper = style(
-    genSnap,
+    genPassive,
     display.inline
   )
 
   val multiTint = style(
-    genSnap,
+    genPassive,
     width(100 %%),
     height(100 %%),
     display.flex,
@@ -70,7 +72,8 @@ object Styles extends StyleSheet.Inline {
   )
 
   val content = style(
-    genSnap
+    genPassive,
+    height := "calc(100vh - 128px)"
   )
 
   val intro = style(
@@ -106,13 +109,13 @@ object Styles extends StyleSheet.Inline {
   )
 
   val editor = style(
-    genSnap,
+    genPassive,
     width(100 %%),
     height(100 %%)
   )
 
   val fullOverview = style(
-    genSnap,
+    genPassive,
     backgroundColor.rgb(240, 240, 240),
     float.left,
     width(25 %%),
@@ -143,8 +146,11 @@ object Styles extends StyleSheet.Inline {
   val canvas = style(
     float.right,
     width(75 %%),
-    height(100 %%)
+    height(100 %%),
+    overflow.visible
   )
+
+  val physBlob = style(genPassive, position.absolute, zIndex(physBlobZIndex))
 
   val genStxBlock = style(
     fontFamily(codeFont),

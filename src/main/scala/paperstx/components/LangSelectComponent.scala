@@ -74,6 +74,7 @@ object LangSelectComponent {
         }
 
         <.input.file(paperstx.Styles.langSelect,
+                     ^.multiple := true,
                      ^.onChange ==> onLangSelectEvent)
       }
       .build

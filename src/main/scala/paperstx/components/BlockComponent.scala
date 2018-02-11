@@ -27,6 +27,7 @@ object BlockComponent {
           ^.backgroundColor := typ.color
             .specify(saturation = 0.75f, brightness = 0.5f)
             .toString,
+          ^.draggable := true,
           ^.onDragStart ==> { event =>
             onDragStart(event, typedTemplate)
           },

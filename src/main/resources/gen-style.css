@@ -2,3 +2,8 @@ html, body {
     margin: 0;
     padding: 0;
 }
+
+body, #root {
+    /* Prevents code blocks from stretching body when going offscreen. */
+    overflow: hidden;
+}
