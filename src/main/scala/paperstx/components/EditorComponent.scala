@@ -4,6 +4,8 @@ import japgolly.scalajs.react.component.Scala.BackendScope
 import japgolly.scalajs.react.{Callback, ReactDragEventFromHtml, ScalaComponent}
 import japgolly.scalajs.react.vdom.html_<^._
 import paperstx.model._
+import paperstx.model.block.BlockBlob
+import paperstx.model.canvas.{Canvas, PhysBlob, Selection}
 import paperstx.util.{Rect, Vector2}
 
 import scalacss.ScalaCssReact._
@@ -25,7 +27,7 @@ object EditorComponent {
     }
 
     def startDrag(event: ReactDragEventFromHtml,
-                  block: TypedTemplate.Full): Callback = {
+                  block: TypedBlock.Full): Callback = {
       val templateElem = event.target
       val elemBounds = Rect(templateElem.getBoundingClientRect())
       val newBlob = PhysBlob(elemBounds, TemplateBlob(block))

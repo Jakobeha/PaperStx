@@ -1,6 +1,7 @@
-package paperstx.model
+package paperstx.model.canvas
 
 import japgolly.scalajs.react.ReactMouseEventFromHtml
+import paperstx.model.block.Blob
 
 /**
   * An operation which can be done on a hole within the container.

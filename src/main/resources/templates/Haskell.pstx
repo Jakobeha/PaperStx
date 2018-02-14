@@ -27,11 +27,11 @@ DataAlt
 
 Deriving
 -
-- deriving ([Class], [Classes])
+- deriving ([Class][Classes])
 
 Classes
 -
-- [Class], [Classes]
+- , [Class][Classes]
 
 Class
 - Eq

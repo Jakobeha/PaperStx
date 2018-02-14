@@ -1,0 +1,74 @@
+Function
+- [Visibility] [Type] {:[a-z][A-Za-z0-9]*}([Args]) {}
+- [Visibility] static [Type] {[a-z][A-Za-z0-9]*}([Args]) {}
+- [Visibility] [Type] {:[a-z][A-Za-z0-9]*}([args:Args]) {
+    [Body(Bind = args>Bind)]
+  }
+- [Visibility] static [Type] {:[a-z][A-Za-z0-9]*}([args:Args]) {{
+    [Body(Bind = args>Bind)]
+  }}
+
+Visibility
+- public
+- protected
+- private
+
+Args
+> Bind
+| Empty
+> Bind
+| Args1
+> Bind
+  | *>Bind
+
+Args1
+> Bind
+| Arg
+> Bind
+  | *>Bind
+| Args2
+> Bind
+  | *>Bind
+
+Args2
+> Bind
+- [first:Arg], [second:Args1]
+> Bind
+  | first>Bind
+  | second>Bind
+
+Arg
+> Bind
+- [Type] {label:[a-z][A-Za-z0-9]*}
+> Bind
+  - [label>Raw]
+
+Body
+< Bind
+| Empty
+| Body1(Bind = Bind)
+
+Body1
+< Bind
+- [Statement(Bind = Bind)]
+- [prev:Statement(OldBind = Bind)]
+  [Body1(Bind = BindNext)]
+> BindNext
+  | Bind
+  | prev>NewBind
+
+Statement
+< OldBind
+> NewBind
+- return [Expr(Bind = OldBind)]
+> NewBind
+- if ([Expr(Bind = OldBind)]) {{
+    [Body(Bind = OldBind)]
+  }}
+> NewBind
+- [Type] {label:[a-z][A-Za-z0-9]*} = [Expr(Bind = OldBind)]
+> NewBind
+  - [label>Raw]
+
+Empty
+-

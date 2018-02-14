@@ -4,6 +4,7 @@ import japgolly.scalajs.react.{Callback, CallbackTo, ReactMouseEventFromHtml, Sc
 import japgolly.scalajs.react.vdom.html_<^._
 import org.scalajs.dom.html
 import paperstx.model._
+import paperstx.model.canvas.{Canvas, HoleOp, PhysBlob, Selection}
 import paperstx.util._
 
 import scalajs.js.Dynamic.global

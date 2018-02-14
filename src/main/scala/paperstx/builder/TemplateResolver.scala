@@ -1,6 +1,8 @@
 package paperstx.builder
 
 import paperstx.model._
+import paperstx.model.block.{BlockType, GenBlockClass}
+import paperstx.model.phase.{Phase, PhaseTransformable, PhaseTransformer}
 import paperstx.util.{ColorHelper, HueColor}
 
 import scalaz.Scalaz._
@@ -11,7 +13,7 @@ object TemplateResolver {
       extends PhaseTransformer[Phase.Parsed, Phase.Full, BuildValidation] {
     override def traverseTemplate(typedTemplate: Nothing) = typedTemplate
 
-    override def traverseTemplateType(typeLabel: String) = {
+    override def traverseBlockType(typeLabel: String) = {
       val ambiguousFailure = Validation.failureNel(
         s"Type is ambiguous - found multiple times: $typeLabel")
       val notFoundFailure = Validation.failureNel(s"Type not found: $typeLabel")
@@ -21,7 +23,7 @@ object TemplateResolver {
           templateTypes.toList match {
             case Nil => None
             case templateType :: Nil =>
-              Some(Success(TemplateType.lift(templateType)))
+              Some(Success(BlockType.lift(templateType)))
             case _ =>
               Some(ambiguousFailure)
           }
@@ -33,7 +35,7 @@ object TemplateResolver {
             case Nil => None
             case unionClass :: Nil =>
               Some(unionClass.traversePhase(this).map {
-                new TemplateClass.FullTypeTemplateClass(_).typ
+                new GenBlockClass.FullTypeTemplateClass(_).typ
               })
             case _ =>
               Some(Validation.failureNel(ambiguousFailure))
@@ -43,7 +45,7 @@ object TemplateResolver {
       enumType
         .orElse(getUnionType)
         .getOrElse(notFoundFailure)
-        .asInstanceOf[BuildValidation[TemplateType]]
+        .asInstanceOf[BuildValidation[BlockType]]
     }
   }
 

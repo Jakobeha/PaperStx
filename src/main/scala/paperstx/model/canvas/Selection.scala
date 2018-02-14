@@ -1,4 +1,4 @@
-package paperstx.model
+package paperstx.model.canvas
 
 import paperstx.util.Vector2
 

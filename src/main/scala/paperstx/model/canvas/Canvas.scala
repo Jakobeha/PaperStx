@@ -1,10 +1,12 @@
-package paperstx.model
+package paperstx.model.canvas
+
+import paperstx.model.block.Blob
 
 import scala.scalajs.js.Dynamic.global
 
 /**
   * Like a source file, contains code in block form -
-  * specifically, in the form of [[paperstx.model.Blob]]s.
+  * specifically, in the form of [[Blob]]s.
   * Also contains the expressions' physical bounds,
   * such as position and size,
   * and can have a "selected" expression which is

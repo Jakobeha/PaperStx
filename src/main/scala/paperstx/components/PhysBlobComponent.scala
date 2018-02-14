@@ -4,6 +4,8 @@ import japgolly.scalajs.react.vdom.html_<^.{^, _}
 import japgolly.scalajs.react.{Callback, ReactDragEventFromHtml, ScalaComponent}
 import org.scalajs.dom.{Element, html}
 import paperstx.model._
+import paperstx.model.block.Blob
+import paperstx.model.canvas.{HoleOp, PhysBlob}
 
 import scalacss.ScalaCssReact._
 
@@ -24,7 +26,8 @@ object PhysBlobComponent {
         val onPhysBlobChange = props.onPhysBlobChange
         val onPhysBlobDragStart = props.onPhysBlobDragStart
         val onFillOrEmpty = props.onFillOrEmpty
-        val typedPhysBlob = TypedBlob.undefinedType[Phase.Full](physBlob.blob)
+        val typedPhysBlob =
+          OptTypedBlob.undefinedType[Phase.Full](physBlob.blob)
 
         //Doesn't care about templates being dragged.
         def lift(newBlob: Blob.Full): PhysBlob = physBlob.copy(blob = newBlob)

@@ -1,16 +1,17 @@
 package paperstx.components
 
-import japgolly.scalajs.react.{Callback, ScalaComponent, ReactDragEventFromHtml}
+import japgolly.scalajs.react.{Callback, ReactDragEventFromHtml, ScalaComponent}
 import japgolly.scalajs.react.vdom.html_<^._
 import paperstx.model._
+import paperstx.model.block.EnumBlockClass
 
 import scalacss.ScalaCssReact._
 
 object ClassOverviewComponent {
   case class Props(
-      clazz: EnumTemplateClass.Full,
-      onClassChange: EnumTemplateClass.Full => Callback,
-      onDragStart: (ReactDragEventFromHtml, TypedTemplate.Full) => Callback)
+      clazz: EnumBlockClass.Full,
+      onClassChange: EnumBlockClass.Full => Callback,
+      onDragStart: (ReactDragEventFromHtml, TypedBlock.Full) => Callback)
 
   val component =
     ScalaComponent
@@ -42,9 +43,9 @@ object ClassOverviewComponent {
       }
       .build
 
-  def apply(clazz: EnumTemplateClass.Full,
-            onClassChange: EnumTemplateClass.Full => Callback,
-            onDragStart: (ReactDragEventFromHtml,
-                          TypedTemplate.Full) => Callback): VdomElement =
+  def apply(clazz: EnumBlockClass.Full,
+            onClassChange: EnumBlockClass.Full => Callback,
+            onDragStart: (ReactDragEventFromHtml, TypedBlock.Full) => Callback)
+    : VdomElement =
     component(Props(clazz, onClassChange, onDragStart))
 }

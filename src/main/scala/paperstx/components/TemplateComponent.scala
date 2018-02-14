@@ -13,9 +13,9 @@ import scalacss.ScalaCssReact._
 
 object TemplateComponent {
   case class Props(
-      typedTemplate: TypedTemplate.Full,
-      onTemplateChange: TypedTemplate.Full => Callback,
-      onDragStart: (ReactDragEventFromHtml, TypedTemplate.Full) => Callback)
+      typedTemplate: TypedBlock.Full,
+      onTemplateChange: TypedBlock.Full => Callback,
+      onDragStart: (ReactDragEventFromHtml, TypedBlock.Full) => Callback)
 
   val component =
     ScalaComponent
@@ -41,9 +41,9 @@ object TemplateComponent {
       }
       .build
 
-  def apply(template: TypedTemplate.Full,
-            onTemplateChange: TypedTemplate.Full => Callback,
-            onDragStart: (ReactDragEventFromHtml,
-                          TypedTemplate.Full) => Callback): VdomElement =
+  def apply(template: TypedBlock.Full,
+            onTemplateChange: TypedBlock.Full => Callback,
+            onDragStart: (ReactDragEventFromHtml, TypedBlock.Full) => Callback)
+    : VdomElement =
     component(Props(template, onTemplateChange, onDragStart))
 }

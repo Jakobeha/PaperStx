@@ -8,15 +8,17 @@ import japgolly.scalajs.react.{
 }
 import japgolly.scalajs.react.vdom.html_<^._
 import paperstx.model._
+import paperstx.model.block.{Blob, BlockFrag}
+import paperstx.model.canvas.{FillHole, HoleOp}
 
 import scalacss.ScalaCssReact._
 
 object FragComponent {
   case class Props(
-      templateFrag: TemplateFrag.Full,
-      onTemplateFragChange: TemplateFrag.Full => Callback,
-      onDragStart: (ReactDragEventFromHtml, TypedTemplate.Full) => Callback,
-      onFillOrEmpty: HoleOp[TemplateFrag.Full] => Callback)
+      templateFrag: BlockFrag.Full,
+      onTemplateFragChange: BlockFrag.Full => Callback,
+      onDragStart: (ReactDragEventFromHtml, TypedBlock.Full) => Callback,
+      onFillOrEmpty: HoleOp[BlockFrag.Full] => Callback)
 
   val component =
     ScalaComponent
@@ -53,7 +55,7 @@ object FragComponent {
                   MultiTintComponent(typ.colors.toSeq)
                 )
               case Some(blob) =>
-                def lift(newBlob: Blob.Full): TemplateFrag.Full = {
+                def lift(newBlob: Blob.Full): BlockFrag.Full = {
                   Hole[Phase.Full](typ, isBinding, Some(newBlob))
                 }
 
@@ -64,7 +66,7 @@ object FragComponent {
                       EmptyHole(Hole(typ, isBinding, None), event, blob))
                   },
                   BlobComponent(
-                    TypedBlob[Phase.Full](typ, blob),
+                    blob,
                     onTemplateFragChange.compose(lift),
                     onDragStart,
                     HoleOp.conarrow(onFillOrEmpty, lift)
@@ -75,11 +77,10 @@ object FragComponent {
       }
       .build
 
-  def apply(
-      templateFrag: TemplateFrag.Full,
-      onTemplateFragChange: TemplateFrag.Full => Callback,
-      onDragStart: (ReactDragEventFromHtml, TypedTemplate.Full) => Callback,
-      onFillOrEmpty: HoleOp[TemplateFrag.Full] => Callback): VdomElement =
+  def apply(templateFrag: BlockFrag.Full,
+            onTemplateFragChange: BlockFrag.Full => Callback,
+            onDragStart: (ReactDragEventFromHtml, TypedBlock.Full) => Callback,
+            onFillOrEmpty: HoleOp[BlockFrag.Full] => Callback): VdomElement =
     component(
       Props(templateFrag, onTemplateFragChange, onDragStart, onFillOrEmpty))
 }

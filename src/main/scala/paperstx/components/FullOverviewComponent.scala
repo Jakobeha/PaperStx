@@ -10,7 +10,7 @@ object FullOverviewComponent {
   case class Props(
       language: Language.Full,
       onLanguageChange: Language.Full => Callback,
-      onDragStart: (ReactDragEventFromHtml, TypedTemplate.Full) => Callback)
+      onDragStart: (ReactDragEventFromHtml, TypedBlock.Full) => Callback)
 
   val component =
     ScalaComponent
@@ -41,7 +41,7 @@ object FullOverviewComponent {
 
   def apply(language: Language.Full,
             onLanguageChange: Language.Full => Callback,
-            onDragStart: (ReactDragEventFromHtml,
-                          TypedTemplate.Full) => Callback): VdomElement =
+            onDragStart: (ReactDragEventFromHtml, TypedBlock.Full) => Callback)
+    : VdomElement =
     component(Props(language, onLanguageChange, onDragStart))
 }

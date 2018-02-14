@@ -3,15 +3,17 @@ package paperstx.components
 import japgolly.scalajs.react.{Callback, ReactDragEventFromHtml, ScalaComponent}
 import japgolly.scalajs.react.vdom.html_<^._
 import paperstx.model._
+import paperstx.model.block.BlockFrag
+import paperstx.model.canvas.HoleOp
 
 import scalacss.ScalaCssReact._
 
 object BlockComponent {
   case class Props(
-      typedTemplate: TypedTemplate.Full,
-      onTypedTemplateChange: TypedTemplate.Full => Callback,
-      onDragStart: (ReactDragEventFromHtml, TypedTemplate.Full) => Callback,
-      onFillOrEmpty: HoleOp[TypedTemplate.Full] => Callback)
+      typedTemplate: TypedBlock.Full,
+      onTypedTemplateChange: TypedBlock.Full => Callback,
+      onDragStart: (ReactDragEventFromHtml, TypedBlock.Full) => Callback,
+      onFillOrEmpty: HoleOp[TypedBlock.Full] => Callback)
 
   val component =
     ScalaComponent
@@ -36,8 +38,7 @@ object BlockComponent {
           },
           template.frags.zipWithIndex.toTagMod {
             case (templateFrag, idx) =>
-              def lift(
-                  newTemplateFrag: TemplateFrag.Full): TypedTemplate.Full = {
+              def lift(newTemplateFrag: BlockFrag.Full): TypedBlock.Full = {
                 val newFrags = template.frags.updated(idx, newTemplateFrag)
                 val newTemplate = template.copy(frags = newFrags)
                 typedTemplate.copy[Phase.Full](template = newTemplate)
@@ -54,11 +55,10 @@ object BlockComponent {
       }
       .build
 
-  def apply(
-      typedTemplate: TypedTemplate.Full,
-      onTypedTemplateChange: TypedTemplate.Full => Callback,
-      onDragStart: (ReactDragEventFromHtml, TypedTemplate.Full) => Callback,
-      onFillOrEmpty: HoleOp[TypedTemplate.Full] => Callback): VdomElement =
+  def apply(typedTemplate: TypedBlock.Full,
+            onTypedTemplateChange: TypedBlock.Full => Callback,
+            onDragStart: (ReactDragEventFromHtml, TypedBlock.Full) => Callback,
+            onFillOrEmpty: HoleOp[TypedBlock.Full] => Callback): VdomElement =
     component(
       Props(typedTemplate, onTypedTemplateChange, onDragStart, onFillOrEmpty))
 }

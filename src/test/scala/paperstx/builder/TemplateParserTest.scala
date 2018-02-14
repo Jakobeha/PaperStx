@@ -1,6 +1,6 @@
 package paperstx.builder
 
-import paperstx.model.{Language, Phase}
+import paperstx.model.Language
 import paperstx.utils.ResourceManager
 import utest._
 

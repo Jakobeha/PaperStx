@@ -8,9 +8,9 @@ import scalacss.ScalaCssReact._
 
 object BasicOverviewComponent {
   case class Props(
-      templates: Seq[TypedTemplate.Full],
-      onTemplatesChange: Seq[TypedTemplate.Full] => Callback,
-      onDragStart: (ReactDragEventFromHtml, TypedTemplate.Full) => Callback)
+      templates: Seq[TypedBlock.Full],
+      onTemplatesChange: Seq[TypedBlock.Full] => Callback,
+      onDragStart: (ReactDragEventFromHtml, TypedBlock.Full) => Callback)
 
   val component =
     ScalaComponent
@@ -32,9 +32,9 @@ object BasicOverviewComponent {
       }
       .build
 
-  def apply(templates: Seq[TypedTemplate.Full],
-            onTemplatesChange: Seq[TypedTemplate.Full] => Callback,
-            onDragStart: (ReactDragEventFromHtml,
-                          TypedTemplate.Full) => Callback): VdomElement =
+  def apply(templates: Seq[TypedBlock.Full],
+            onTemplatesChange: Seq[TypedBlock.Full] => Callback,
+            onDragStart: (ReactDragEventFromHtml, TypedBlock.Full) => Callback)
+    : VdomElement =
     component(Props(templates, onTemplatesChange, onDragStart))
 }
