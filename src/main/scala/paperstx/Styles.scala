@@ -2,8 +2,6 @@ package paperstx
 
 import CssSettings._
 
-import scalacss.internal.Attr
-
 object Styles extends StyleSheet.Inline {
   import dsl._
 
@@ -31,11 +29,6 @@ object Styles extends StyleSheet.Inline {
   val blockWrapper = style(
     genPassive,
     display.block
-  )
-
-  val inlineWrapper = style(
-    genPassive,
-    display.inline
   )
 
   val multiTint = style(
@@ -73,7 +66,7 @@ object Styles extends StyleSheet.Inline {
 
   val content = style(
     genPassive,
-    height := "calc(100vh - 128px)"
+    height :=! "calc(100vh - 128px)"
   )
 
   val intro = style(
@@ -119,7 +112,7 @@ object Styles extends StyleSheet.Inline {
     backgroundColor.rgb(240, 240, 240),
     float.left,
     width(25 %%),
-    height := "calc(100vh - 128px)",
+    height :=! "calc(100vh - 128px)",
     overflow.scroll
   )
 
@@ -186,12 +179,21 @@ object Styles extends StyleSheet.Inline {
       )
   }
 
-  val freeBlob = style(inlineWrapper)
+  val freeBlob = style(genPassive, display.inlineBlock, position.relative)
 
-  val templateBlob = style(
+  val blockBlob = style(
     )
 
-  val template = style(
+  val freeBlobHoleBg = style(
+    borderRadius(4 px),
+    position.absolute,
+    width(100 %%),
+    height(100 %%),
+    overflow.hidden,
+    pointerEvents := "none"
+  )
+
+  val block = style(
     genStxBlock,
     borderColor.rgba(128, 128, 128, 0.5),
     borderStyle.solid,

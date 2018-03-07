@@ -1,11 +1,13 @@
-Expr = Def | Val
+Expr
+| Def
+| Val
 
 Exprs
 -
 - [Expr] [Exprs]
 
 Val
-- {[0-9]+}
+- {:[0-9]+}
 - Hello
 - World
 - multi
@@ -15,7 +17,7 @@ Def
 - [Val] = [Val]
 - [Val] : [Type]
 - [Expr]
-  
+
   [Val]
 
 Type
@@ -25,3 +27,40 @@ Type
 Rec
 - -
 - [Rec]-[Rec]
+
+Dependent
+- {content:.+} is [content>Raw]
+
+DependentProp
+- Const
+- let {content:.+} in [Property]
+> Property
+  | content>Raw
+  | Val
+
+FarDependentProp
+- let {content:.+} in
+  [dep:ExtDependent(Input = content>Raw)] or
+  [dep>Output]
+
+ExtDependent
+< Input
+> Output
+- {out1:[A-Za-z]+} {out2:[0-9]+} | ([Input])
+> Output
+  | out1>Raw
+  | out2>Raw
+
+FarConstDependentProp
+- [Property] <- [dep:RewriteExtDependent(In = Type)]
+> Property
+  - Out: [dep>Output]
+  - Def: [Def]
+
+RewriteExtDependent
+< In
+> Output
+| ExtDependent(Input = In)
+> Output
+  | self>Output
+  | Type

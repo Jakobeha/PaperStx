@@ -1,0 +1,29 @@
+Expr
+| Def
+| Val
+
+Exprs
+-
+- [Expr] [Exprs]
+
+Val
+- {:[0-9]+}
+- Hello
+- World
+- multi
+  line!
+
+Def
+- [Val] = [Val]
+- [Val] : [Type]
+- [Expr]
+
+  [Val]
+
+Type
+- Number
+- String
+
+Rec
+- -
+- [Rec]-[Rec]

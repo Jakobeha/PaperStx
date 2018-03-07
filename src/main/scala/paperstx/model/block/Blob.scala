@@ -1,53 +1,24 @@
 package paperstx.model.block
 
-import paperstx.model._
-import paperstx.model.phase.{Phase, PhaseTransformable, PhaseTransformer}
+/** Can encode arbitrary text (e.g. a user typing, invalid code), "ideally" encodes a block. */
+sealed trait Blob {
 
-import scalaz.Applicative
-import scalaz.Scalaz._
-
-sealed trait Blob[TPhase <: Phase] extends PhaseTransformable[Blob, TPhase] {
-  def overTemplate[TNewPhase <: Phase](
-      f: TypedBlock[TPhase] => TypedBlock[TNewPhase]): Blob[TNewPhase]
+  /** Whether the blob can fill a hole with the given (potentially unresolved) type.
+    * Free blobs alawys fit, typed blobs fit if the hole's type is resolved and contains the block type. */
+  def fitsIn(holeType: Option[BlockType]): Boolean
 }
 
-case class FreeBlob[TPhase <: Phase](content: String)
-    extends Blob[TPhase]
-    with PhaseTransformable[FreeBlob, TPhase] {
-  def overTemplate[TNewPhase <: Phase](
-      f: TypedBlock[TPhase] => TypedBlock[TNewPhase]): Blob[TNewPhase] =
-    FreeBlob[TNewPhase](content)
-
-  override def traversePhase[TNewPhase <: Phase, F[_]: Applicative](
-      transformer: PhaseTransformer[TPhase, TNewPhase, F]) =
-    FreeBlob[TNewPhase](content).point[F]
+case class FreeBlob(text: String) extends Blob {
+  override def fitsIn(holeType: Option[BlockType]) = true
 }
 
-case class BlockBlob[TPhase <: Phase](content: TypedBlock[TPhase])
-    extends Blob[TPhase]
-    with PhaseTransformable[BlockBlob, TPhase] {
-  def overTemplate[TNewPhase <: Phase](
-      f: TypedBlock[TPhase] => TypedBlock[TNewPhase]): Blob[TNewPhase] =
-    BlockBlob(f(content))
-
-  override def traversePhase[TNewPhase <: Phase, F[_]: Applicative](
-      transformer: PhaseTransformer[TPhase, TNewPhase, F]) =
-    content.traversePhase(transformer).map(BlockBlob.apply)
-}
-
-object Blob {
-  implicit class FullBlob(self: Blob.Full) {
-
-    /**
-      * Whether the blob can fill the hole with the given type.
-      * Free blobs can fill any hole, template blobs can fill the same
-      * holes as their templates.
-      */
-    def fitsIn(typ: BlockType): Boolean = self match {
-      case FreeBlob(_)         => true
-      case BlockBlob(template) => template.fitsIn(typ)
-    }
+case class BlockBlob(block: TypedBlock) extends Blob {
+  override def fitsIn(holeType: Option[BlockType]) = holeType match {
+    case None            => false
+    case Some(_holeType) => _holeType.contains(block.typ)
   }
+}
 
-  type Full = Blob[Phase.Full]
+object FreeBlob {
+  val empty: FreeBlob = FreeBlob(text = "")
 }

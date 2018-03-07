@@ -1,45 +1,74 @@
 package paperstx.model.block
 
-import paperstx.model.phase.Phase
+/** Contains many blocks with the same type. */
+sealed trait BlockClass {
+  val typ: ResolvingType
+  val inputs: Seq[DependentType]
+  val outputs: Seq[DependentType]
 
-object BlockClass {
-  type Full = BlockClass[Phase.Full]
+  /** Makes this different than classes with the same name but different ids,
+    * and different from all user-defined classes. */
+  def anonymize(anonId: Int, classId: Int): BlockClass
 
-  def apply[TBody](label: String,
-                   inPropTypes: Seq[String],
-                   outPropTypes: Seq[String],
-                   body: TBody): GenBlockClass[TBody] =
-    GenBlockClass(label, inPropTypes, outPropTypes, body)
-
-  def unapply[TBody](x: GenBlockClass[TBody])
-    : Option[(String, Seq[String], Seq[String], TBody)] =
-    GenBlockClass.unapply(x)
-
-  def partitionCases[TPhase <: Phase](elems: Seq[BlockClass[TPhase]])
-    : (Seq[EnumBlockClass[TPhase]], Seq[UnionBlockClass[TPhase]]) =
-    (elems.flatMap { clazz =>
-      clazz.body match {
-        case enumBody: EnumClassBody[TPhase @unchecked] =>
-          Some(clazz.copy[EnumClassBody[TPhase]](body = enumBody))
-        case _ => None
-      }
-    }, elems.flatMap { clazz =>
-      clazz.body match {
-        case unionBody: UnionClassBody[TPhase @unchecked] =>
-          Some(clazz.copy[UnionClassBody[TPhase]](body = unionBody))
-        case _ => None
-      }
-    })
+  def appendInputs(newInputs: Seq[DependentType]): BlockClass
 }
 
-object EnumBlockClass {
-  type Full = EnumBlockClass[Phase.Full]
+/** Directly contains blocks of the type. */
+case class EnumBlockClass(enumType: EnumType, blocks: Seq[RewriteBlock])
+    extends BlockClass {
+  override val typ = ResolvedType(BlockType.pure(enumType))
+  override val inputs: Seq[DependentType] = typ.inputs
+  override val outputs: Seq[DependentType] = typ.outputs
+
+  val typedBlocks: Seq[TypedBlock] = blocks.map(TypedBlock(_, enumType))
+
+  /**
+    * Constraint: The blocks need to be derived from this class -
+    * they need this class's type.
+    */
+  def setTypedBlocks(newTypedBlocks: Seq[TypedBlock]): EnumBlockClass = {
+    assert(
+      newTypedBlocks.forall(_.typ == enumType),
+      "Tried to set a class's templates to blocks not members of the class."
+    )
+
+    this.copy(blocks = newTypedBlocks.map(_.rewriteBlock))
+  }
+
+  override def anonymize(anonId: Int, classId: Int) =
+    this.copy(enumType = enumType.anonymize(anonId, classId))
+
+  override def appendInputs(newInputs: Seq[DependentType]) =
+    this.copy(enumType = enumType.appendInputs(newInputs))
+
 }
 
-object UnionBlockClass {
-  type Full = UnionBlockClass[Phase.Full]
+/** Indirectly contains blocks of sub-types. */
+case class UnionBlockClass(label: String,
+                           subTypes: Seq[ProFunctionType],
+                           inputs: Seq[DependentType],
+                           outputs: Seq[DependentType])
+    extends BlockClass {
+  override val typ = UnresolvedType(
+    RewriteUnionType(label, subTypes, inputs, outputs))
+
+  override def anonymize(anonId: Int, classId: Int) =
+    this.copy(label = DependentType.anonymize(label, anonId, classId))
+
+  override def appendInputs(newInputs: Seq[DependentType]) =
+    this.copy(inputs = inputs ++ newInputs)
 }
 
-object EmptyBlockClass {
-  type Full = EmptyBlockClass[Phase.Full]
+/** Contains no blocks of any type. */
+case class EmptyBlockClass(label: String,
+                           inputs: Seq[DependentType],
+                           outputs: Seq[DependentType])
+    extends BlockClass {
+  override val typ = ResolvedType(BlockType.empty(label))
+
+  override def anonymize(anonId: Int, classId: Int) =
+    this.copy(label = DependentType.anonymize(label, anonId, classId))
+
+  override def appendInputs(newInputs: Seq[DependentType]) =
+    this.copy(inputs = inputs ++ newInputs)
 }

@@ -1,9 +1,8 @@
 package paperstx.builder
 
 import fastparse.all._
-import paperstx.model._
 import paperstx.model.block._
-import paperstx.model.phase.Phase
+import paperstx.model.local._
 import paperstx.util.RegExpHelper
 
 import scala.reflect.ClassTag
@@ -15,7 +14,7 @@ object TemplateParser {
   /**
     * Parses a language with the given contents.
     */
-  def parse(str: String): BuildValidation[Language[Phase.Parsed]] =
+  def parse(str: String): BuildValidation[LocalLanguage] =
     language.parse(str) match {
       case Parsed.Success(res, _) => Success(res)
       case fail: Parsed.Failure =>
@@ -48,18 +47,28 @@ object TemplateParser {
     P(newline(numIndents).map(_ => "\n"))
   }
 
-  private val instanceLabel: P[String] = P(CharsWhile(_.isLetterOrDigit).!)
-  private val typeLabel: P[String] = P(CharsWhile(_.isLetterOrDigit).!)
+  private val someNewlinesCapt: Int => P[String] = indentMemo { numIndents =>
+    P((("\n" ~ &("\n")).rep.! ~ newlineCapt(numIndents)).map {
+      case (x, y) => x + y
+    })
+  }
 
-  private val staticFrag: Int => P[StaticFrag[Phase.Parsed]] = indentMemo {
-    numIndents =>
-      P(
-        (CharsWhile(!"[]{}\n".contains(_)).! |
-          ("\n".rep.! ~ newlineCapt(numIndents)) |
-          doubleEscape("]") |
-          doubleEscape("[") |
-          doubleEscape("{") |
-          doubleEscape("}")).rep(min = 1).map(_.mkString).map(StaticFrag.apply))
+  private val instanceLabel: P[String] = P(
+    ("*" | CharsWhile(_.isLetterOrDigit)).!.opaque("Instance Label"))
+  private val typeLabel: P[String] = P(
+    CharsWhile(_.isLetterOrDigit).!.opaque("Type Label"))
+
+  private val staticFrag: Int => P[StaticFrag] = indentMemo { numIndents =>
+    P(
+      (CharsWhile(!"[]{}\n".contains(_)).! |
+        someNewlinesCapt(numIndents) |
+        doubleEscape("]") |
+        doubleEscape("[") |
+        doubleEscape("{") |
+        doubleEscape("}"))
+        .rep(min = 1)
+        .map(_.mkString)
+        .map(StaticFrag.apply))
   }
 
   private val regExp: Parser[RegExp] = P(
@@ -73,83 +82,123 @@ object TemplateParser {
         } catch {
           case JavaScriptException(_: SyntaxError) =>
             Fail
-              .opaque("<valid regular expression>")
+              .opaque("Valid Regular Expression")
               .map(_ => RegExpHelper.failRegExp)
         }
     })
 
-  private val freeTextFrag: P[FreeTextHole[Phase.Parsed]] = P(
-    ("{" ~/ instanceLabel.? ~ ":" ~ regExp ~ "}")
-      .map {
-        case (instanceBind, validator) =>
-          FreeTextHole.empty(validator, instanceBind)
-      })
+  private val freeTextHole: P[FreeTextHole] =
+    P(
+      ("{" ~/ instanceLabel.? ~ ":" ~ regExp ~ "}")
+        .map {
+          case (instanceBind, validator) =>
+            FreeTextHole.empty(validator, instanceBind)
+        })
 
-  private val hole: P[BlockHole[Phase.Parsed]] =
-    P(("[" ~/ (instanceLabel ~ ":").? ~ typeLabel ~ "]").map {
-      case (instanceBind, typeLabell) =>
-        BlockHole.empty[Phase.Parsed](typeLabell, instanceBind)
+  private val localType: P[DependentType] = P(
+    typeLabel.map(DependentType.apply))
+
+  private val instanceType: P[DependentType] = P(
+    (instanceLabel ~ ">" ~/ localType).map {
+      case (_instanceLabel, _localType) =>
+        _localType.asProperty(_instanceLabel)
     })
 
-  private val frag: Int => P[BlockFrag[Phase.Parsed]] = indentMemo {
-    numIndents =>
-      P(NoCut(staticFrag(numIndents) | freeTextFrag | hole))
+  private val dependentType: P[DependentType] = P(instanceType | localType)
+
+  private val functionType: P[FunctionType[DependentType]] = P {
+    val rewrite = ("(" ~/ (localType ~/ " = " ~ functionType)
+      .rep(min = 1) ~ ")").?.map(
+      _.map(_.toMap).map(Rewrite.apply).getOrElse(Rewrite.empty))
+
+    (dependentType ~ rewrite).map {
+      case (typ, inputs) => FunctionType(typ, inputs)
+    }
   }
 
-  //noinspection ForwardReference
-  private val property: Int => P[BlockClass[Phase.Parsed]] = indentMemo {
-    numIndents =>
-      P("> " ~/ blockClass(numIndents + 1))
-  }
+  private val blockHole: P[BlockHole] =
+    P(("[" ~/ (instanceLabel ~ ":").? ~ functionType ~ "]").map {
+      case (instanceBind, _functionType) =>
+        BlockHole.empty(_functionType, instanceBind)
+    })
 
-  private val block: Int => P[Block[Phase.Parsed]] = indentMemo { numIndents =>
-    P(("-" ~/ ((" " ~/ frag(numIndents + 1).rep) | P("")
-      .map(_ => Seq.empty)) ~ (newline(numIndents) ~ property(numIndents)).rep)
-      .map {
-        case (frags, properties) => Block[Phase.Parsed](frags, properties)
-      })
-  }
-
-  private val unionCase: Int => P[ReExportType[Phase.Parsed]] = indentMemo {
-    numIndents =>
-      P(
-        ("| " ~/ typeLabel ~ (newline(numIndents) ~ property(numIndents)).rep)
-          .map {
-            case (label, properties) =>
-              ReExportType[Phase.Parsed](label, properties)
-          })
-  }
-
-  private val emptyClassBody: P[EmptyClassBody[Phase.Parsed]] = P(
-    "".!.map(_ => EmptyClassBody()))
-
-  private val enumClassBody: Int => P[EnumClassBody[Phase.Parsed]] =
+  private val blockFrag: Int => P[BlockFrag] =
     indentMemo { numIndents =>
-      P(
-        (newline(numIndents) ~ block(numIndents))
-          .rep(min = 1)
-          .map(EnumClassBody.apply))
+      P(staticFrag(numIndents) | freeTextHole | blockHole)
     }
 
-  private val unionClassBody: Int => P[UnionClassBody[Phase.Parsed]] =
+  //noinspection ForwardReference
+  private val subClass: Int => P[LocalBlockClass] =
+    indentMemo { numIndents =>
+      P("> " ~/ blockClass(numIndents + 1))
+    }
+
+  private val block: Int => P[Block] =
+    indentMemo { numIndents =>
+      P(
+        ("-" ~/ ((" " ~/ blockFrag(numIndents + 1).rep) | P("")
+          .map(_ => Seq.empty))).map(Block.apply))
+    }
+
+  private val localBlock: Int => P[LocalBlock] =
+    indentMemo { numIndents =>
+      P(
+        (block(numIndents) ~ (newline(numIndents) ~ subClass(numIndents)).rep)
+          .map {
+            case (_block, subClasses) => LocalBlock(_block, subClasses)
+          })
+    }
+
+  private val unionCase: Int => P[LocalFunctionType] =
+    indentMemo { numIndents =>
+      P(
+        ("| " ~/ functionType ~ (newline(numIndents) ~ subClass(numIndents)).rep)
+          .map {
+            case (function, subClasses) =>
+              LocalFunctionType(function.typ, function.inputs, subClasses)
+          })
+    }
+
+  private val enumClassBody: Int => P[LocalEnumClassBody] =
+    indentMemo { numIndents =>
+      P(
+        (newline(numIndents) ~ localBlock(numIndents))
+          .rep(min = 1)
+          .map(LocalEnumClassBody.apply))
+    }
+
+  private val unionClassBody: Int => P[LocalUnionClassBody] =
     indentMemo { numIndents =>
       P(
         (newline(numIndents) ~ unionCase(numIndents))
           .rep(min = 1)
-          .map(_.toSet)
-          .map(UnionClassBody.apply))
+          .map(LocalUnionClassBody.apply))
     }
 
-  private val blockClass: Int => P[BlockClass[Phase.Parsed]] = indentMemo {
-    numIndents =>
-      P((typeLabel ~/ (newline(numIndents) ~ "< " ~/ typeLabel).rep ~ (newline(
-        numIndents) ~ "> " ~/ typeLabel).rep ~ (emptyClassBody | enumClassBody(
-        numIndents) | unionClassBody(numIndents))).map {
-        case (label, inPropTypes, outPropTypes, body) =>
-          BlockClass(label, inPropTypes, outPropTypes, body)
+  private val emptyClassBody: P[LocalEmptyClassBody.type] = P(
+    P("").map(_ => LocalEmptyClassBody))
+
+  private val classBody: Int => P[LocalClassBody] =
+    indentMemo { numIndents =>
+      P(enumClassBody(numIndents) | unionClassBody(numIndents) | emptyClassBody)
+    }
+
+  private val classHead: Int => P[ClassHead] = indentMemo { numIndents =>
+    P(
+      (typeLabel ~/
+        (newline(numIndents) ~ "< " ~/ dependentType).rep ~
+        (newline(numIndents) ~ "> " ~/ dependentType).rep).map {
+        case (label, inputs, outputs) => ClassHead(label, inputs, outputs)
       })
   }
 
-  private val language: P[Language[Phase.Parsed]] =
-    P(blockClass(0).rep(sep = "\n\n").map(Language.apply) ~/ End)
+  private val blockClass: Int => P[LocalBlockClass] =
+    indentMemo { numIndents =>
+      P((classHead(numIndents) ~ classBody(numIndents)).map {
+        case (head, body) => body.combine(head)
+      })
+    }
+
+  private val language: P[LocalLanguage] =
+    P((blockClass(0).rep(sep = "\n\n") ~/ End).map(LocalLanguage.apply))
 }

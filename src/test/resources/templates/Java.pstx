@@ -41,18 +41,18 @@ Arg
 > Bind
 - [Type] {label:[a-z][A-Za-z0-9]*}
 > Bind
-  | label>Raw
+  - [label>Raw]
 
 Body
 < Bind
 | Empty
-| Statement(Bind = Bind)
 | Body1(Bind = Bind)
 
 Body1
 < Bind
+- [Statement(Bind = Bind)]
 - [prev:Statement(OldBind = Bind)]
-  [Body(Bind = BindNext)]
+  [Body1(Bind = BindNext)]
 > BindNext
   | Bind
   | prev>NewBind
@@ -68,12 +68,7 @@ Statement
 > NewBind
 - [Type] {label:[a-z][A-Za-z0-9]*} = [Expr(Bind = OldBind)]
 > NewBind
-  | label>Raw
-
-Type
-- int
-- float
-- String
+  - [label>Raw]
 
 Empty
 -

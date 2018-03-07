@@ -2,60 +2,53 @@ package paperstx.model.block
 
 import paperstx.util.HueColor
 
+/** The concrete type of a hole - possible concrete types. */
 case class BlockType(label: String,
-                     subTypes: Set[EnumBlockType],
-                     inPropTypes: Seq[String],
-                     outPropTypes: Seq[String]) {
-  lazy val colors: Set[HueColor] = subTypes.map { _.color }
+                     subTypes: Seq[EnumType],
+                     inputs: Seq[DependentType],
+                     outputs: Seq[DependentType]) {
 
-  /**
-    * Whether this type contains all instances of the other type.
-    */
-  def isSuperset(other: BlockType) =
-    other.subTypes.subsetOf(this.subTypes)
+  /** Has the same label - resolves to this in a root scope. */
+  val unresolved: DependentType = DependentType(label)
+  val subTypesSet: Set[EnumType] = subTypes.toSet
+  val inputsSet: Set[DependentType] = inputs.toSet
+  val outputsSet: Set[DependentType] = outputs.toSet
+  val colors: Seq[HueColor] = subTypes.map(_.color)
 
-  /**
-    * Whether this type contains all instances of the other type.
-    */
-  def isSuperset(other: EnumBlockType) =
-    this.subTypes.contains(other)
+  def isSuperType(other: BlockType) = other.subTypesSet.subsetOf(subTypesSet)
+
+  def contains(other: EnumType) = subTypesSet.contains(other)
+
+  override def toString = {
+    val inputsSummary = inputs.map(_.toString).mkString(", ")
+    val outputsSummary = outputs.map(_.toString).mkString(", ")
+    s"$label{ = ${subTypes.mkString(sep = " | ")} }($inputsSummary)[$outputsSummary]"
+  }
 }
 
 object BlockType {
 
-  /**
-    * Labelled undefined and separate from other types, contains no instances.
-    */
-  val undefined: BlockType =
-    // Won't conflict, because user can't create types with <brackets>
-    BlockType("<undefined>",
-              subTypes = Set.empty,
-              inPropTypes = Seq.empty,
-              outPropTypes = Seq.empty)
+  /** The colors for an unknown type. */
+  val unknownColors: Seq[HueColor] = Seq.empty
 
-  /**
-    * Has the same label, input property types, and output property types as the enum type,
-    * contains just that as a subtype.
-    */
-  def lift(enumType: EnumBlockType,
-           inPropTypes: Seq[String],
-           outPropTypes: Seq[String]): BlockType =
-    BlockType(enumType.label, Set(enumType), inPropTypes, outPropTypes)
+  /** Contains no types. */
+  def empty(label: String): BlockType =
+    BlockType(label,
+              subTypes = Seq.empty,
+              inputs = Seq.empty,
+              outputs = Seq.empty)
 
-  /**
-    * Contains all instances of the given type.
-    */
+  /** Contains just the given type. */
+  def pure(subType: EnumType): BlockType =
+    BlockType(label = subType.label,
+              subTypes = Seq(subType),
+              inputs = subType.inputs,
+              outputs = subType.outputs)
+
+  /** Contains all the given types (all their sub-types). */
   def union(label: String,
-            subTypes: Set[BlockType],
-            inPropTypes: Seq[String],
-            outPropTypes: Seq[String]): BlockType =
-    BlockType(label, subTypes.flatMap { _.subTypes }, inPropTypes, outPropTypes)
-
-  /**
-    * Contains no instances. Typically won't have any input or output types.
-    */
-  def empty(label: String,
-            inPropTypes: Seq[String],
-            outPropTypes: Seq[String]): BlockType =
-    BlockType(label, Set.empty, inPropTypes, outPropTypes)
+            subTypes: Seq[BlockType],
+            inputs: Seq[DependentType],
+            outputs: Seq[DependentType]): BlockType =
+    BlockType(label, subTypes.flatMap(_.subTypes), inputs, outputs)
 }

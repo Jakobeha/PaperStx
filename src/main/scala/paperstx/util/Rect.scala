@@ -19,6 +19,9 @@ case class Rect(left: Double,
 }
 
 object Rect {
+  def apply(left: Double, top: Double, width: Double, height: Double): Rect =
+    Rect(left, right = left + width, top, bottom = top + height, width, height)
+
   def apply(clientRect: ClientRect): Rect =
     Rect(clientRect.left,
          clientRect.right,

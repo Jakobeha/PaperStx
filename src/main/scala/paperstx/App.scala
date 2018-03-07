@@ -1,8 +1,8 @@
 package paperstx
 
 import org.scalajs.dom.document
-import paperstx.components.MainComponent
 import CssSettings._
+import paperstx.view.components.MainComponent
 
 object App {
   def main(): Unit = {

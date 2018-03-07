@@ -1,103 +1,151 @@
 package paperstx.model.block
 
-import paperstx.model.phase.{Phase, PhaseTransformable, PhaseTransformer}
-
 import scala.scalajs.js.RegExp
-import scalaz.Applicative
-import scalaz.Scalaz._
 
-sealed trait BlockFrag[TPhase <: Phase]
-    extends PhaseTransformable[BlockFrag, TPhase] {
+/** A part of a block. */
+sealed trait BlockFrag {
+  val instanceBind: Option[String]
+  val subRewriteBlock: Option[RewriteBlock]
 
-  def instanceBind: Option[String]
+  /** The outputs which would be inside of the frag's instance, local to the frag. */
+  protected def subOutputs(scope: Scope): Seq[DependentType]
 
-  /**
-    * Classes which can be used in other fragments in the same block as this fragment,
-    * which come from this fragment.
-    */
-  def addedClasses: Seq[BlockClass[TPhase#Dependent]]
-}
+  /** Contains the types of the outputs which would be inside of the frag's instance, local to the frag.
+    * Types can be fully resolved with the parent scope, but for some properties (e.g. output) this is a waste. */
+  protected def subScope(parentScope: Scope): Scope
 
-case class StaticFrag[TPhase <: Phase](text: String)
-    extends BlockFrag[TPhase]
-    with PhaseTransformable[StaticFrag, TPhase] {
-  override def instanceBind = None
-  override def addedClasses = Seq.empty
+  /** Transform's the fragment's type itself - not sub types. */
+  def overType(
+      f: FunctionType[DependentType] => FunctionType[DependentType]): BlockFrag
 
-  override def traversePhase[TNewPhase <: Phase, F[_]: Applicative](
-      transformer: PhaseTransformer[TPhase, TNewPhase, F]) =
-    StaticFrag[TNewPhase](this.text).point[F]
-}
+  /** All the blocks satisfying dependent types within the block. */
+  def bindBlocks(scope: Scope): Seq[TypedBlock]
 
-case class FreeTextHole[TPhase <: Phase](text: String,
-                                         validator: RegExp,
-                                         instanceBind: Option[String])
-    extends BlockFrag[TPhase]
-    with PhaseTransformable[FreeTextHole, TPhase] {
-  def addedBlock[TPhase2 <: Phase]: Block[TPhase2] = Block.static(text)
+  /** The outputs which are inside of the frag's instance, local to the enclosing block. */
+  def instanceOutputs(scope: String => Scope): Seq[DependentType] =
+    instanceBind match {
+      case None => Seq.empty
+      case Some(instanceBind_) =>
+        subOutputs(scope(instanceBind_)).map(_.asProperty(instanceBind_))
+    }
 
-  override def addedClasses =
-    Seq(
-      BlockClass(FreeTextHole.rawPropTypeLabel,
-                 inPropTypes = Seq.empty,
-                 outPropTypes = Seq.empty,
-                 body = EnumClassBody(blocks = Seq(addedBlock))))
+  /** Contains the types of the outputs which are inside of the frag's instance, local to the enclosing block.
+    * Types can be fully resolved with the parent scope, but for some properties (e.g. output) this is a waste. */
+  def instanceScope(parentScope: String => Scope): Scope =
+    instanceBind match {
+      case None => Scope.empty
+      case Some(_instanceBind) =>
+        subScope(parentScope(_instanceBind))
+          .mapInputs(_.asProperty(_instanceBind))
+    }
 
-  override def traversePhase[TNewPhase <: Phase, F[_]: Applicative](
-      transformer: PhaseTransformer[TPhase, TNewPhase, F]) =
-    FreeTextHole[TNewPhase](this.text, this.validator, this.instanceBind)
-      .point[F]
-}
-
-case class BlockHole[TPhase <: Phase](content: Option[Blob[TPhase]],
-                                      typ: TPhase#Dependent#BlockType,
-                                      instanceBind: Option[String])
-    extends BlockFrag[TPhase]
-    with PhaseTransformable[BlockHole, TPhase] {
-  override def addedClasses =
-    content
-      .collect {
-        case BlockBlob(typedBlock) => typedBlock.block.properties
+  /** Uses the given function to get the block scope, returns the scope outside the frag. */
+  def subBlockScope(rootScope: Scope): Option[Scope] =
+    instanceBind.flatMap { _instanceBind =>
+      subRewriteBlock.map { _subRewriteBlock =>
+        _subRewriteBlock
+          .justFullFragScope(rootScope)
+          .mapInputs(_.asProperty(_instanceBind))
       }
-      .getOrElse(Seq.empty)
+    }
+}
 
-  override def traversePhase[TNewPhase <: Phase, F[_]: Applicative](
-      transformer: PhaseTransformer[TPhase, TNewPhase, F]) = {
-    (content.traverse { _.traversePhase(transformer) } |@| transformer.dependent
-      .traverseBlockType(typ) |@| instanceBind
-      .point[F])(BlockHole.apply[TNewPhase])
+/** Immutable - e.g. keywords, core syntax. */
+case class StaticFrag(text: String) extends BlockFrag {
+  override val instanceBind = None
+  override val subRewriteBlock = None
+
+  override protected def subOutputs(scope: Scope) = Seq.empty
+
+  override protected def subScope(parentScope: Scope) = Scope.empty
+
+  override def overType(
+      f: FunctionType[DependentType] => FunctionType[DependentType]) = this
+
+  override def bindBlocks(scope: Scope) = Seq.empty
+}
+
+/** Mutable - e.g. bind variable names. */
+case class FreeTextHole(text: String,
+                        validator: RegExp,
+                        instanceBind: Option[String])
+    extends BlockFrag {
+  override val subRewriteBlock = None
+
+  private val bindBlock: Block = Block(Seq(StaticFrag(text)))
+
+  private val bindRewriteBlock: RewriteBlock =
+    RewriteBlock(bindBlock, outputs = Rewrite.empty)
+
+  private val bindTypedBlock: TypedBlock =
+    TypedBlock(bindRewriteBlock, FreeTextHole.rawType(text))
+
+  override protected def subOutputs(scope: Scope) =
+    Seq(FreeTextHole.rawDependentType)
+
+  override protected def subScope(parentScope: Scope) =
+    Scope.simple(
+      Map(
+        FreeTextHole.rawDependentType -> BlockType.pure(
+          FreeTextHole.rawType(text))))
+
+  override def overType(
+      f: FunctionType[DependentType] => FunctionType[DependentType]) = this
+
+  override def bindBlocks(scope: Scope) = Seq(bindTypedBlock)
+}
+
+/** Mutable - e.g. reference variable names. */
+case class BlockHole(content: Option[Blob],
+                     typ: FunctionType[DependentType],
+                     instanceBind: Option[String])
+    extends BlockFrag {
+  override val subRewriteBlock = content.collect {
+    case BlockBlob(typedBlock) => typedBlock.rewriteBlock
+  }
+
+  override protected def subOutputs(scope: Scope) =
+    scope.semiResolve(typ) match {
+      case None            => Seq.empty
+      case Some(blockType) => blockType.outputs
+    }
+
+  override protected def subScope(parentScope: Scope) = content match {
+    case None              => Scope.empty
+    case Some(FreeBlob(_)) => Scope.empty
+    case Some(BlockBlob(typedBlock)) =>
+      typedBlock.rewriteBlock.localScope(parentScope)
+  }
+
+  override def overType(
+      f: FunctionType[DependentType] => FunctionType[DependentType]) =
+    this.copy(typ = f(typ))
+
+  override def bindBlocks(scope: Scope) = subRewriteBlock match {
+    case None                   => Seq.empty
+    case Some(_subRewriteBlock) => _subRewriteBlock.bindBlocks(scope)
   }
 }
 
-object BlockFrag {
-  type Full = BlockFrag[Phase.Full]
-}
-
-object StaticFrag {
-  type Full = StaticFrag[Phase.Full]
-}
-
 object FreeTextHole {
-  type Full = FreeTextHole[Phase.Full]
 
-  val rawPropTypeLabel: String = "Raw"
+  /** References the of a sub-block which contains raw text. */
+  val rawDependentType: DependentType = DependentType("Raw")
 
-  /**
-    * A free text hole with no text.
-    */
-  def empty[TPhase <: Phase](
-      validator: RegExp,
-      instanceBind: Option[String]): FreeTextHole[TPhase] =
+  /** A free text hole with no text. */
+  def empty(validator: RegExp, instanceBind: Option[String]): FreeTextHole =
     FreeTextHole(text = "", validator, instanceBind)
+
+  /* TODO Maybe want to use a UID instead? */
+  /** The type of the sub-block which contains the raw text. */
+  def rawType(text: String): EnumType =
+    EnumType(s"Raw$$$text", inputs = Seq.empty, outputs = Seq.empty)
 }
 
 object BlockHole {
-  type Full = BlockHole[Phase.Full]
 
-  /**
-    * A block hole with no elements.
-    */
-  def empty[TPhase <: Phase](typ: TPhase#Dependent#BlockType,
-                             instanceBind: Option[String]): BlockHole[TPhase] =
+  /** A block hole with no elements. */
+  def empty(typ: FunctionType[DependentType],
+            instanceBind: Option[String]): BlockHole =
     BlockHole(content = None, typ, instanceBind)
 }
