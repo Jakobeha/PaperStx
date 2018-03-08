@@ -20,12 +20,9 @@ object ClassOverviewComponent {
         <.div(
           paperstx.Styles.classOverview,
           ClassHeaderComponent(clazz.get.enumType.label),
-          <.div(
-            paperstx.Styles.classOverviewBody,
-            BasicOverviewComponent(
-              clazz.narrow(_.typedBlocks, _.setTypedBlocks),
-              templateProps
-            )
+          BasicOverviewComponent(
+            clazz.narrow(_.typedBlocks, _.setTypedBlocks),
+            templateProps
           )
         )
       }

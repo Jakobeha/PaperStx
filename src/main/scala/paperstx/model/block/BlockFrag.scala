@@ -105,10 +105,7 @@ case class BlockHole(content: Option[Blob],
   }
 
   override protected def subOutputs(scope: Scope) =
-    scope.semiResolve(typ) match {
-      case None            => Seq.empty
-      case Some(blockType) => blockType.outputs
-    }
+    scope.semiResolve(typ).eval.outputs
 
   override protected def subScope(parentScope: Scope) = content match {
     case None              => Scope.empty

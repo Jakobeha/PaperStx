@@ -12,8 +12,8 @@ case class LocalFunctionType(typ: DependentType,
   def instanceOutputs(scope: Scope): Seq[DependentType] =
     scope
       .semiResolve(functionType)
-      .map(_.outputs)
-      .getOrElse(Seq.empty)
+      .eval
+      .outputs
       .map(_.asProperty("self"))
 
   /** Puts the sub-classes into the root scope. Also modifies references in the pro-function. */
@@ -22,7 +22,8 @@ case class LocalFunctionType(typ: DependentType,
                 scope: Scope): Global[ProFunctionType] = {
     val transferred = instanceOutputs(scope)
     outputSubClasses.zipWithIndex
-      .traverseF {
+      .traverseF[Global,
+                 (BlockClass, (DependentType, FunctionType[DependentType]))] {
         case (outputSubClass, idx) =>
           outputSubClass.globalizeWithMapping(idx,
                                               anonId,
@@ -30,16 +31,14 @@ case class LocalFunctionType(typ: DependentType,
                                               scope,
                                               transferred)
       }
-      .flatMap {
-        globalsAndMappings: Seq[
-          (BlockClass, (DependentType, FunctionType[DependentType]))] =>
-          val (globalClasses, globalMappings) = globalsAndMappings.unzip
-          val globalRewrite = Rewrite(globalMappings.toMap)
-          val absoluteProFunctionType =
-            ProFunctionType(typ,
-                            inputs.mapUncurryOut(globalRewrite.partialRewrite),
-                            globalRewrite)
-          Global(absoluteProFunctionType, globalClasses)
+      .flatMap { globalsAndMappings =>
+        val (globalClasses, globalMappings) = globalsAndMappings.unzip
+        val globalRewrite = Rewrite(globalMappings.toMap)
+        val absoluteProFunctionType =
+          ProFunctionType(typ,
+                          inputs.mapUncurryOut(globalRewrite.partialRewrite),
+                          globalRewrite)
+        Global(globalClasses, absoluteProFunctionType)
       }
   }
 }

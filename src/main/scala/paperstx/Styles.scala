@@ -124,12 +124,9 @@ object Styles extends StyleSheet.Inline {
     fontSize(16 px)
   )
 
-  val classOverviewBody = style(
+  val basicOverview = style(
     padding(l = 32 px, r = 0 px, t = 2 px, b = 2 px)
   )
-
-  val basicOverview = style(
-    )
 
   val singleOverview = style(
     display.block,

@@ -26,7 +26,7 @@ case class LocalBlock(block: Block, subClasses: Seq[LocalBlockClass]) {
         val globalRewrite = Rewrite(globalMappings.toMap)
         val globalBlock =
           RewriteBlock(block.rewriteTypes(globalRewrite), globalRewrite)
-        Global(globalBlock, globalClasses)
+        Global(globalClasses, globalBlock)
       }
   }
 }

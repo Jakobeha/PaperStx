@@ -22,3 +22,9 @@ case class UnresolvedType(typ: RewriteUnionType) extends ResolvingType {
 
   override def toString = typ.toString
 }
+
+object ResolvingType {
+
+  /** Contains no sub-types. Technically resolved, but it doesn't matter. */
+  def empty(label: String): ResolvingType = ResolvedType(BlockType.empty(label))
+}

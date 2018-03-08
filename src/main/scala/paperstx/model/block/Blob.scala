@@ -4,19 +4,16 @@ package paperstx.model.block
 sealed trait Blob {
 
   /** Whether the blob can fill a hole with the given (potentially unresolved) type.
-    * Free blobs alawys fit, typed blobs fit if the hole's type is resolved and contains the block type. */
-  def fitsIn(holeType: Option[BlockType]): Boolean
+    * Free blobs alawys fit, typed blobs fit if the hole's type contains the block type. */
+  def fitsIn(holeType: BlockType): Boolean
 }
 
 case class FreeBlob(text: String) extends Blob {
-  override def fitsIn(holeType: Option[BlockType]) = true
+  override def fitsIn(holeType: BlockType) = true
 }
 
 case class BlockBlob(block: TypedBlock) extends Blob {
-  override def fitsIn(holeType: Option[BlockType]) = holeType match {
-    case None            => false
-    case Some(_holeType) => _holeType.contains(block.typ)
-  }
+  override def fitsIn(holeType: BlockType) = holeType.contains(block.typ)
 }
 
 object FreeBlob {

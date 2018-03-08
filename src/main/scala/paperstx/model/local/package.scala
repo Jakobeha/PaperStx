@@ -9,13 +9,6 @@ import scalaz.Scalaz._
 package object local {
   type Global[T] = Writer[List[BlockClass], T]
 
-  object Global {
-    def apply[T](x: T, extraClasses: Traversable[BlockClass]): Global[T] =
-      Writer(extraClasses.toList, x)
-
-    def pure[T](x: T): Global[T] = x.point[Global]
-  }
-
   implicit val globalApplicative: Applicative[Global] =
     WriterT.writerTApplicative[Id, List[BlockClass]]
 

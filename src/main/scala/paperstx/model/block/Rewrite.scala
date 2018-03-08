@@ -1,7 +1,6 @@
 package paperstx.model.block
 
 import paperstx.util.TraverseFix.TraversableMap
-import paperstx.util.ColExts.MapExt
 
 import scalaz.Applicative
 import scalaz.Scalaz._
@@ -84,7 +83,10 @@ object Rewrite {
     /** Resolves the rewritten outputs in the scope,
       * and creates a scope mapping the rewritten inputs to them. */
     def subScope(superScope: Scope): Scope =
-      Scope.simple(self.rewritten.mapMaybeValues(superScope.resolve)) // TODO Should types be fully resolved?
+      Scope.simple(
+        self.rewritten
+          .mapValues(superScope.resolve)
+          .mapValues(_.eval)) // TODO Should types be fully resolved?
   }
 
   /** Rewrites nothing. */

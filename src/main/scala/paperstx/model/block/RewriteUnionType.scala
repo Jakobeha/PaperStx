@@ -43,14 +43,14 @@ case class RewriteUnionType(label: String,
     traverseTypes(_.traverseFunctionType(f))
 
   /** Resolves by resolving pro-function types. */
-  private def traverseResolveTypes[F[_]: Applicative](
+  private def foldMapResolveTypes[F[_]: Applicative](
       f: ProFunctionType => F[BlockType]): F[BlockType] =
     types.traverseF(f).map(BlockType.union(label, _, inputs, outputs))
 
   /** Resolves by resolving function types. */
-  def traverseResolveFunctionTypes[F[_]: Applicative](
+  def foldMapResolveFunctionTypes[F[_]: Applicative](
       f: FunctionType[DependentType] => F[BlockType]): F[BlockType] =
-    traverseResolveTypes(typ => f(typ.functionType))
+    foldMapResolveTypes(typ => f(typ.functionType))
 
   override def toString = {
     val inputsSummary = inputs.map(_.toString).mkString(", ")

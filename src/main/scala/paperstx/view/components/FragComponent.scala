@@ -40,12 +40,8 @@ object FragComponent {
 
           case BlockHole(content, typ, instanceBind) =>
             val fragDepScope = typ.inputs.subScope(fullScope)
-            val resolvedType = fullScope.resolve(typ)
-            val typeTint = resolvedType match {
-              case None => EmptyVdom
-              case Some(_resolvedType) =>
-                MultiTintComponent(_resolvedType.colors)
-            }
+            val resolvedType = fullScope.resolve(typ).eval // TODO Use resolve fail info e.g. to show errors
+            val typeTint = MultiTintComponent(resolvedType.colors)
 
             content match {
               case None =>
@@ -92,7 +88,7 @@ object FragComponent {
                     Prop(blob, { newBlob =>
                       blockFrag.set(rewrap(newBlob))
                     }),
-                    outerType = resolvedType, //Will have transparent background if free and type can't resolve
+                    outerType = Some(resolvedType),
                     transferRewritesByType,
                     onFreeBlur = { content =>
                       blockFrag.set(emptyHole).when_(content.isEmpty)
