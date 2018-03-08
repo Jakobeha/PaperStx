@@ -18,9 +18,6 @@ case class Scope(resolvedTypes: Map[DependentType, ResolvingType]) {
   def resolve(functionType: FunctionType[DependentType]): Option[BlockType] =
     semiResolve(functionType).flatMap(furtherResolve)
 
-  def resolve(typ: DependentType): Option[BlockType] =
-    semiResolve(typ).flatMap(furtherResolve)
-
   /** @note Discards the function's input unless it rewrites the type itself,
     * because the output doesn't contain sub-types. */
   def semiResolve(
@@ -34,6 +31,47 @@ case class Scope(resolvedTypes: Map[DependentType, ResolvingType]) {
 
   def semiResolve(typ: DependentType): Option[ResolvingType] =
     resolvedTypes.get(typ)
+
+  /** Rewrites inputs for the unresolved type into inputs for the resolved type. */
+  def transferRewritesByType(functionType: FunctionType[DependentType])
+    : Map[EnumType, Rewrite[DependentType]] =
+    semiResolve(functionType) match {
+      case None                  => Map.empty
+      case Some(ResolvedType(_)) => Map.empty
+      case Some(UnresolvedType(rewriteUnionType)) =>
+        transferRewritesByTypeFrom(rewriteUnionType)
+    }
+
+  /** Rewrites inputs for the resolving type into inputs for the resolved type. */
+  private def transferRewritesByTypeFrom(rewriteUnionType: RewriteUnionType)
+    : Map[EnumType, Rewrite[DependentType]] =
+    rewriteUnionType.functionTypes
+      .flatMap { functionType =>
+        val immRewrite = functionType.inputs //e.g. A2 => A1(B1 = B2)
+        semiResolve(functionType).map {
+          case ResolvedType(blockType) =>
+            blockType.subTypes.map((_, immRewrite)).toMap
+          case UnresolvedType(nextType) =>
+            transferRewritesByTypeFrom(nextType)
+            /* e.g. A3 => A2(C1 = C2), and A3 => D(E = A2)
+               becomes A3 => A1(B1 = B2), and A3 => D(E = A1(B1 = B2))
+               ((C1 = C2) (I believe should?) get discarded) */
+              .mapValues(_.partialRewriteOut(immRewrite))
+        }
+      }
+      /* No ideal way to combine the value rewrites - technically keys shouldn't overlap.
+         The values would combine in e.g.
+         ```
+         A
+         < D
+         < E
+         | B(C = D, F = G)
+         | B(C = E, H = I)
+         ```
+         If a block `B` fills a hole of this type, should its `C` be `D` or `E`, and should it have `F` and/or `H`?
+         This is ambiguous. */
+      .reduceOption(_ ++ _)
+      .getOrElse(Map.empty)
 
   /** Will resolve the type if it's still unresolved, otherwise will return it as-is. */
   def furtherResolve(resolvingType: ResolvingType): Option[BlockType] =

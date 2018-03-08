@@ -13,6 +13,8 @@ case class RewriteUnionType(label: String,
                             inputs: Seq[DependentType],
                             outputs: Seq[DependentType]) {
   val unresolved: DependentType = DependentType(label)
+  val functionTypes: Seq[FunctionType[DependentType]] =
+    types.map(_.functionType)
 
   def setUnresolved(newUnresolved: DependentType): RewriteUnionType =
     this.copy(label = newUnresolved.label)

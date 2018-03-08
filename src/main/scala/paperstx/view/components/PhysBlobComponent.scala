@@ -46,6 +46,7 @@ object PhysBlobComponent {
           BlobComponent(
             physBlob.promap(_.blob, rewrap),
             outerType = None,
+            transferRewritesByType = Map.empty,
             onFreeBlur = { content =>
               onPhysBlobDelete.when_(content.isEmpty)
             },

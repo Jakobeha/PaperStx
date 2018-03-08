@@ -8,10 +8,12 @@ import paperstx.view.props.{FreeBlobForm, PhysProps, Prop}
 import scalacss.ScalaCssReact._
 
 object BlobComponent {
-  case class Props(blob: Prop[Blob],
-                   outerType: Option[BlockType],
-                   onFreeBlur: String => Callback,
-                   physProps: PhysProps[Blob])
+  case class Props(
+      blob: Prop[Blob],
+      outerType: Option[BlockType],
+      transferRewritesByType: Map[EnumType, Rewrite[DependentType]],
+      onFreeBlur: String => Callback,
+      physProps: PhysProps[Blob])
 
   val component =
     ScalaComponent
@@ -19,8 +21,11 @@ object BlobComponent {
       .render_P { props =>
         val blob = props.blob
         val outerType = props.outerType
+        val transferRewritesByType = props.transferRewritesByType
         val onFreeBlur = props.onFreeBlur
         val physProps = props.physProps
+        val rootScope = physProps.rootScope
+        val depScope = physProps.depScope
         val solidify = physProps.solidify
         val onDragStart = physProps.onDragStart
 
@@ -53,6 +58,13 @@ object BlobComponent {
               BlockBlob(newTypedBlock)
             }
 
+            val transferRewrite = transferRewritesByType.get(typedBlock.typ)
+            val blockDepScope = transferRewrite match {
+              case None => depScope
+              case Some(_transferRewrite) =>
+                depScope.rewrite(_transferRewrite, rootScope)
+            }
+
             <.div(
               paperstx.Styles.blockBlob,
               ^.draggable := true,
@@ -61,7 +73,7 @@ object BlobComponent {
                 Prop(typedBlock, { newTypedBlock =>
                   blob.set(rewrap(newTypedBlock))
                 }),
-                physProps.narrow(rewrap)
+                physProps.narrowRescope(blockDepScope, rewrap)
               )
             )
         }
@@ -70,7 +82,9 @@ object BlobComponent {
 
   def apply(blob: Prop[Blob],
             outerType: Option[BlockType],
+            transferRewritesByType: Map[EnumType, Rewrite[DependentType]],
             onFreeBlur: String => Callback,
             physProps: PhysProps[Blob]): VdomElement =
-    component(Props(blob, outerType, onFreeBlur, physProps))
+    component(
+      Props(blob, outerType, transferRewritesByType, onFreeBlur, physProps))
 }

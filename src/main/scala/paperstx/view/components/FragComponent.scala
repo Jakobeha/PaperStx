@@ -53,13 +53,13 @@ object FragComponent {
                   paperstx.Styles.emptyHole,
                   ^.title := typ.typ.label + " hole",
                   ^.onMouseEnter --> onFillOrEmpty(FillHole { newBlob =>
-                    println("-----")
+                    /*println("-----")
                     println(s"newBlob: $newBlob)")
                     println(s"typ: $typ")
                     println(s"resolvedType: $resolvedType")
                     println(s"fragDepScope: $fragDepScope")
                     println(s"depScope: $depScope")
-                    println(s"rootScope: $rootScope")
+                    println(s"rootScope: $rootScope")*/
                     if (!newBlob.fitsIn(resolvedType)) {
                       None
                     } else {
@@ -73,6 +73,11 @@ object FragComponent {
 
               case Some(blob) =>
                 val emptyHole = BlockHole(None, typ, instanceBind)
+                // TODO transferRewrite: Rewrite for args changed in RewriteUnionType.
+                // Input of the rewrite is the new arg input, output is the new arg output -
+                // can probably be taken right from the function.
+                val transferRewritesByType =
+                  fullScope.transferRewritesByType(typ)
 
                 def rewrap(newBlob: Blob): BlockFrag = {
                   BlockHole(Some(newBlob), typ, instanceBind)
@@ -88,6 +93,7 @@ object FragComponent {
                       blockFrag.set(rewrap(newBlob))
                     }),
                     outerType = resolvedType, //Will have transparent background if free and type can't resolve
+                    transferRewritesByType,
                     onFreeBlur = { content =>
                       blockFrag.set(emptyHole).when_(content.isEmpty)
                     },
